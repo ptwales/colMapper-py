@@ -18,8 +18,8 @@ Maps:
 - turn `mapOpers` into pure functions
 - add more functions
 - `mapAss` needs to optionally remove Null Values
-- add queue to `mapper`
-- add flow control to `mapper`
+- add queue to `colMapper`
+- add flow control to `colMapper`
 - Maybe
   + Create `mapInterpertor`
     - is a factory that accepts a string and interperts the apropriate function
