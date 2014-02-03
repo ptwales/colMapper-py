@@ -1,5 +1,8 @@
-def operTokenReg(token):
-    # switch
-    # case token
-    #   return delegate
-    # etc
+tokenReg = {
+        '=': mapIs,
+        '==': mapAss,
+        '+': mapSum,
+        '*': mapProd
+        }
+def getTokenReg(token):
+    return tokenReg.get(token)
