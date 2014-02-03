@@ -13,7 +13,7 @@ Maps:
     + Sum values in both columns
     + ???
 
-# TODO
+###TODO
 
 - turn `mapOpers` into pure functions
 - add more functions
