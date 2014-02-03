@@ -22,7 +22,16 @@ for each element in dict (or queue
                     get value of that column for current row.
         returned value becomes the value of the (current row, dict key column)
 """
+tokenReg = {
+    '=': mapIs,
+    '==': mapAss,
+    '+': mapSum,
+    '*': mapProd
+    }
         
+def getTokenReg(token):
+    return tokenReg.get(token)
+    
 class colMapCmd(object):
 
     def __init__(self):
@@ -42,6 +51,7 @@ def colMap(mapCommands, fromSheet, toSheet, topRow=2, bottomRow=0, toTopRow=2):
         for key in mapCommands.keys():
             toSheet.Cells(row, key).value = evaluateCommand(mapCommands[key], fromSheet)
 
+# NEEDS TESTING
 def evaluateCommand(mapCmd, fromSheet, row):
     if len(mapCmd) = 1:
         return fromSheet.Cells(row, mapCmd[0]).Value
@@ -50,5 +60,3 @@ def evaluateCommand(mapCmd, fromSheet, row):
             for i in range(1,len(mapCmd)):
                 args[i] = evaluateCommand(mapCmd[i], fromSheet, row)
         return mapCmd[0](args)
-
-
