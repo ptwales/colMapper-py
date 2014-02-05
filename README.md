@@ -23,3 +23,8 @@ Maps:
 - Maybe
   + Create `mapInterpertor`
     - is a factory that accepts a string and interperts the apropriate function
+
+## Dependencies
+
+- python xlrd module
+- python xlwt module
