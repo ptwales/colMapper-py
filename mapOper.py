@@ -5,6 +5,16 @@ def __stripNULL__(valueList):
         if value = NULL:
             valueList.remove(value)
 """ 
+tokenReg = {
+    '=': mapIs,
+    '==': mapAss,
+    '+': mapSum,
+    '*': mapProd
+    }
+        
+def getTokenReg(token):
+    return tokenReg.get(token)
+
 def mapIs(valueList):
     return values[0]
 
@@ -12,8 +22,6 @@ def mapSum(valueList):
     return sum(valueList)
     
 def mapAss(valueList):
-    # Later Optionally remove Null Values from the list
-    # self.__stripNull__(valueList)
     #__stripNull__(valueList)
     if len(valueList) == 1:
             return valueList[0]
@@ -29,5 +37,5 @@ def mapCond(valueList):
 
 def mapProd(valueList):
     #__stripNull__(valueList)
-    return reduce(operator.mul, iterable, 1)
+    return reduce(operator.mul, valueList, 1)
 

@@ -1,62 +1,54 @@
-# python modules for spreadsheet manipulating not loaded
-# CONTAINS PSEUDO CODE FOR IT
-# => pseudo code is VBA
+from mmap import mmap
+from xlrd import open_workbook
 
 """
-Use Dictionary or Queue?
-
 mapCmds: dict of lists of more lists or functions or parameters
 first element in list is the function, rest are parameters (Polish/LISP)
 
 dict key is column to map to
 Total evaluation of a dict element contains the map to a column
 
-for each element in dict (or queue
-    for each row
-        recurslively evaluate the list.
-            first element is function,
-            following are arguements
-                if arguement is a list
-                    evaluate that list
-                else arguement is a column
-                    get value of that column for current row.
-        returned value becomes the value of the (current row, dict key column)
 """
-tokenReg = {
-    '=': mapIs,
-    '==': mapAss,
-    '+': mapSum,
-    '*': mapProd
-    }
-        
-def getTokenReg(token):
-    return tokenReg.get(token)
     
 class colMapCmd(object):
 
-    def __init__(self):
-        # declare dict
-    
-    def addMapCmd(self, IMapOper, destColumn):
-    
-    def stackMapCmd(self, IMapOper):
-    
+    def __init__(self, parent, *cols):
+        self.parent = parent
+        self.cols = cols                # can be another colMapCmd
+
+    def evaluate(self, fromSheet, row):
+        if len(self.cols) = 1:
+            return fromSheet.cell(row, self.cols[0]).value
+        else:
+            args[]
+                for i in range(1,len(self.cols)):
+                    args[i] = self.cols[i].evaluate(fromSheet, row)
+            return self.cols[0](args)
+
+
+class sheetMapCmd(dict):
+
+    def __init__(self, parent, *colMap):
+        self.parent = parent
+        self._ = *colMap
+
+    def validate(self):
+        """
+        assert that every key be a key to a sheet column
+        therefore it must be either
+          a string of no more than 3 letters 
+          or less than (max number of excel rows)
+
+        will fail if keys are not colMapCmd
+        """
+
 
 # by row
-def colMap(mapCommands, fromSheet, toSheet, topRow=2, bottomRow=0, toTopRow=2):
+def interpColMap(mapCommands, fromSheet, toSheet, topRow=2, bottomRow=0, toTopRow=2):
     if bottomRow < 1:
-        bottomRow = fromSheet.UsedRange.Rows.Count
+        bottomRow = fromSheet.nrows
     assert topRow < bottomRow and toTopRow > 0
     for row in range(topRow, bottomRow):
         for key in mapCommands.keys():
-            toSheet.Cells(row, key).value = evaluateCommand(mapCommands[key], fromSheet)
+            toSheet.cell(row, key).value = evaluateCommand(mapCommands[key], fromSheet)
 
-# NEEDS TESTING
-def evaluateCommand(mapCmd, fromSheet, row):
-    if len(mapCmd) = 1:
-        return fromSheet.Cells(row, mapCmd[0]).Value
-    else:
-        args[]
-            for i in range(1,len(mapCmd)):
-                args[i] = evaluateCommand(mapCmd[i], fromSheet, row)
-        return mapCmd[0](args)
