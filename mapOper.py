@@ -1,3 +1,5 @@
+from operator import mul
+
 __FAIL__ = "~FAIL!"
 """
 def __stripNULL__(valueList):
@@ -9,33 +11,34 @@ tokenReg = {
     '=': mapIs,
     '==': mapAss,
     '+': mapSum,
-    '*': mapProd
+    '*': mapProd,
+    '?': mapCond,
     }
         
-def getTokenReg(token):
-    return tokenReg.get(token)
+def getTokenReg( token ):
+    return tokenReg.get( token )
 
-def mapIs(valueList):
+def mapIs( valueList ):
     return values[0]
 
-def mapSum(valueList):
-    return sum(valueList)
+def mapSum( valueList ):
+    return sum( valueList )
     
-def mapAss(valueList):
+def mapAss( valueList ):
     #__stripNull__(valueList)
-    if len(valueList) == 1:
+    if len( valueList ) == 1:
             return valueList[0]
-        for i in range(0, len(valueList) - 1):
+        for i in range( 0, len( valueList ) - 1 ):
             if valueList[i] != valueList[i+1]:
                 return __FAIL__
         return valueList[0]
 
-def mapCond(valueList):
+def mapCond( valueList ):
     # valueList = (BOOL, TRUE_VALUE, FALSE_VALUE)
-    assert len(valueList) = 3
+    assert len( valueList ) = 3
     return valueList[1] if valueList[0] else valueList[2]
 
-def mapProd(valueList):
+def mapProd( valueList ):
     #__stripNull__(valueList)
-    return reduce(operator.mul, valueList, 1)
+    return reduce( mul, valueList, 1 )
 
