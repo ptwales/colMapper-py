@@ -17,12 +17,12 @@ class colMapCmd( object ):
 
     def evaluate( self, fromSheet, row ):
         if len( self.cols ) = 1:
-            return fromSheet.cell( row, self._[0] ).value
+            return fromSheet.cell( row, self._.get(0) ).value
         else:
             args[]
                 for i in range( 1, len( self._ ) ):
-                    args[i] = self._[i].evaluate( fromSheet, row )
-            return self._[0]( args )
+                    args[i] = self._.get( i ).evaluate( fromSheet, row )
+            return self._.get(0)( args )
 
 
 class sheetMapCmd( dict ):
@@ -51,5 +51,5 @@ def interpColMap( mapCommands, fromSheet, toSheet, topRow=2, bottomRow=0, toTopR
     assert topRow < bottomRow and toTopRow > 0
     for row in range( topRow, bottomRow ):
         for key in mapCommands.keys():
-            toSheet.cell( row, key ).value = evaluateCommand( mapCommands[key], fromSheet )
+            toSheet.cell( row, key ).value = evaluateCommand( mapCommands.get( key ), fromSheet )
 
