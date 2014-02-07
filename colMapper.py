@@ -10,29 +10,30 @@ Total evaluation of a dict element contains the map to a column
 
 """
     
-class colMapCmd(object):
+class colMapCmd( object ):
 
-    def __init__(self, parent, *cols):
-        self.parent = parent
-        self.cols = cols                # can be another colMapCmd
+    def __init__( self, *cols ):
+        self._ = cols                # can be another colMapCmd
 
-    def evaluate(self, fromSheet, row):
-        if len(self.cols) = 1:
-            return fromSheet.cell(row, self.cols[0]).value
+    def evaluate( self, fromSheet, row ):
+        if len( self.cols ) = 1:
+            return fromSheet.cell( row, self._[0] ).value
         else:
             args[]
-                for i in range(1,len(self.cols)):
-                    args[i] = self.cols[i].evaluate(fromSheet, row)
-            return self.cols[0](args)
+                for i in range( 1, len( self._ ) ):
+                    args[i] = self._[i].evaluate( fromSheet, row )
+            return self._[0]( args )
 
 
-class sheetMapCmd(dict):
+class sheetMapCmd( dict ):
 
-    def __init__(self, parent, *colMap):
-        self.parent = parent
-        self._ = *colMap
-
-    def validate(self):
+    def __init__( self, dictColMapCmd ):
+        self._ = { cmc.key : cmc.col for cmc in dicColMapCmd }
+        if not self.__validate__:
+            print( "dictColMapCmd is invalid" )
+            del self._{:}
+            
+    def __validate__( self ):
         """
         assert that every key be a key to a sheet column
         therefore it must be either
@@ -41,14 +42,14 @@ class sheetMapCmd(dict):
 
         will fail if keys are not colMapCmd
         """
+        return False
 
 
-# by row
-def interpColMap(mapCommands, fromSheet, toSheet, topRow=2, bottomRow=0, toTopRow=2):
+def interpColMap( mapCommands, fromSheet, toSheet, topRow=2, bottomRow=0, toTopRow=2 ):
     if bottomRow < 1:
         bottomRow = fromSheet.nrows
     assert topRow < bottomRow and toTopRow > 0
-    for row in range(topRow, bottomRow):
+    for row in range( topRow, bottomRow ):
         for key in mapCommands.keys():
-            toSheet.cell(row, key).value = evaluateCommand(mapCommands[key], fromSheet)
+            toSheet.cell( row, key ).value = evaluateCommand( mapCommands[key], fromSheet )
 
