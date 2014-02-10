@@ -9,7 +9,8 @@ dict key is column to map to
 Total evaluation of a dict element contains the map to a column
 
 """
-    
+   
+
 class colMapCmd( object ):
 
     def __init__( self, *cols ):
@@ -28,12 +29,12 @@ class colMapCmd( object ):
 class sheetMapCmd( dict ):
 
     def __init__( self, dictColMapCmd ):
-        self._ = { cmc.key : cmc.col for cmc in dicColMapCmd }
-        if not self.__validate__:
+        self._ = dictColMapCmd
+        if not self._validate:
             print( "dictColMapCmd is invalid" )
             del self._{:}
             
-    def __validate__( self ):
+    def _validate( self ):
         """
         assert that every key be a key to a sheet column
         therefore it must be either
@@ -43,6 +44,7 @@ class sheetMapCmd( dict ):
         will fail if keys are not colMapCmd
         """
         return False
+
 
 
 def interpColMap( mapCommands, fromSheet, toSheet, topRow=2, bottomRow=0, toTopRow=2 ):
