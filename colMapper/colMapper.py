@@ -1,5 +1,6 @@
 from mmap import mmap
 from xlrd import open_workbook
+from xlwt import Workbook
 
 """
 mapCmds: dict of lists of more lists or functions or parameters
@@ -11,7 +12,7 @@ Total evaluation of a dict element contains the map to a column
 """
    
 
-class colMapCmd( object ):
+class opList( object ):
 
     def __init__( self, *cols ):
         self._ = cols                # can be another colMapCmd
@@ -26,7 +27,7 @@ class colMapCmd( object ):
             return self._.get(0)( args )
 
 
-class sheetMapCmd( dict ):
+class MapCmd( dict ):
 
     def __init__( self, dictColMapCmd ):
         self._ = dictColMapCmd
@@ -53,5 +54,5 @@ def interpColMap( mapCommands, fromSheet, toSheet, topRow=2, bottomRow=0, toTopR
     assert topRow < bottomRow and toTopRow > 0
     for row in range( topRow, bottomRow ):
         for key in mapCommands.keys():
-            toSheet.cell( row, key ).value = evaluateCommand( mapCommands.get( key ), fromSheet )
+            toSheet.write( row, key, evaluateCommand( mapCommands.get( key ), fromSheet ) )
 
