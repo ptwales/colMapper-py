@@ -1,4 +1,4 @@
-# import the files
+import colMapper
 
 fwp = open_workbook( 'fromSheet.xls' )
 twp = open_workbook( 'toSheet.xls' )
