@@ -1,6 +1,6 @@
-from mmap import mmap
-from xlrd import open_workbook
-from xlwt import Workbook
+#from mmap import mmap
+#from xlrd import open_workbook
+#from xlwt import Workbook
 
 """
 mapCmds: dict of lists of more lists or functions or parameters
@@ -10,36 +10,36 @@ dict key is column to map to
 Total evaluation of a dict element contains the map to a column
 
 """
-   
 
-class opList( object ):
 
-    def __init__( self, *cols ):
+class opList(object):
+
+    def __init__(self, *cols):
         self._ = cols                # can be another colMapCmd
 
-    def evaluate( self, fromSheet, row ):
-        if len( self.cols ) = 1:
-            return fromSheet.cell( row, self._.get(0) ).value
+    def evaluate(self, fromSheet, row):
+        if len(self._) == 1:
+            return fromSheet.cell(row, self._.get(0)).value
         else:
-            args[]
-                for i in range( 1, len( self._ ) ):
-                    args[i] = self._.get( i ).evaluate( fromSheet, row )
-            return self._.get(0)( args )
+            args = []
+            for i in range(1, len(self)):
+                args[i] = self._.get(i).evaluate(fromSheet, row)
+            return self._.get(0)(args)
 
 
-class MapCmd( dict ):
+class MapCmd(dict):
 
-    def __init__( self, dictColMapCmd ):
+    def __init__(self, dictColMapCmd):
         self._ = dictColMapCmd
         if not self._validate:
-            print( "dictColMapCmd is invalid" )
-            del self._{:}
-            
-    def _validate( self ):
+            print("dictColMapCmd is invalid")
+            del self._
+
+    def _validate(self):
         """
         assert that every key be a key to a sheet column
         therefore it must be either
-          a string of no more than 3 letters 
+          a string of no more than 3 letters
           or less than (max number of excel rows)
 
         will fail if keys are not colMapCmd
@@ -47,12 +47,11 @@ class MapCmd( dict ):
         return False
 
 
-
-def interpColMap( mapCommands, fromSheet, toSheet, topRow=2, bottomRow=0, toTopRow=2 ):
+def interpColMap(mpCmd, fmSheet, toSheet,
+                 topRow=2, bottomRow=0, toTopRow=2):
     if bottomRow < 1:
-        bottomRow = fromSheet.nrows
+        bottomRow = fmSheet.nrows
     assert topRow < bottomRow and toTopRow > 0
-    for row in range( topRow, bottomRow ):
-        for key in mapCommands.keys():
-            toSheet.write( row, key, evaluateCommand( mapCommands.get( key ), fromSheet ) )
-
+    for row in range(topRow, bottomRow):
+        for key in list(mpCmd.keys()):
+            toSheet.write(row, key, mpCmd[key].evaluate(fmSheet, row))
