@@ -1,19 +1,18 @@
-import colMapper
+from colMapper import *
+import xlrd
+import xlwt
+fwb = xlrd.open_workbook('demo_1.xls')
+fws = fwb.sheet_by_index(0)
+twb = xlwt.Workbook()
+tws = twb.add_sheet('Sheet 1')
 
-fwb = open_workbook( 'fromSheet.xls' )
-fws = fwb.Sheets( 1 )
-twb = open_workbook( 'toSheet.xls' )
-twb = twb.Sheets( 1 )
+demoCmd = MapCmd({
+    "A": opList([mapIs, "Hello, World"]),
+    "B": opList([mapSum, "A", "B", "C"]),
+    "C": opList([mapAss, "C", "D", "E"]),
+    "D": opList([mapProd, opList([mapSum, "B", "A"]), "A", "B"]),
+    "E": "F"
+})
 
-demoCmd = MapCmd ( { "A": opList( (mapIs, "Hello, World") ) # map is accepts only 1 arg
-                   , "B": opList( (mapSum, "A", "B", "C") )
-                   , "C": opList( (mapAss, "A", "C", "D") )
-                   , "D": opList( (mapProd, opList( (mapSum, "A", "B") ), "C", "D") ) # stacking commands
-                 } )
-
-interpColMap( demoCmd, fws, tws, 1, 0, 1 )
-
-# Pseudo Code
-fwb.close
-twb.save
-twb.close
+interpColMap(demoCmd, fws, tws, 1, 0, 1)
+twb.Save('out_demo_1.xls')
