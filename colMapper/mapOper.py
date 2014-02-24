@@ -10,9 +10,8 @@ def __stripNULL__(valueList):
 """
 
 
-def mapIs(valueList):
+def mapVal(valueList):
     return valueList[0]
-
 
 def mapSum(valueList):
     return sum(valueList)
@@ -30,9 +29,9 @@ def mapAss(valueList):
 
 
 def mapCond(valueList):
-    # valueList = (BOOL, TRUE_VALUE, FALSE_VALUE)
-    assert len(valueList) == 3
-    return valueList[1] if valueList[0] else valueList[2]
+    # valueList = (X == Y, TRUE_VALUE, FALSE_VALUE)
+    assert len(valueList) == 4
+    return valueList[2] if valueList[0] == valueList[1] else valueList[3]
 
 
 def mapProd(valueList):
@@ -41,7 +40,8 @@ def mapProd(valueList):
 
 
 tokenReg = {
-    '=': mapIs,
+    '=': mapVal,
+    '$': mapVal,
     '==': mapAss,
     '+': mapSum,
     '*': mapProd,
