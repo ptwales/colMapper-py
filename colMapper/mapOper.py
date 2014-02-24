@@ -40,7 +40,6 @@ def mapProd(valueList):
 
 
 tokenReg = {
-    '=': mapVal,
     '$': mapVal,
     '==': mapAss,
     '+': mapSum,
