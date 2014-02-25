@@ -14,26 +14,6 @@ EXCEL2010_MAXCOL = 16372 #is this in xlrd/xlwt?
 EXCEL2008_MAXCOL = 256
 MAX_COL = EXCEL2008_MAXCOL
 
-
-
-class opList(list):
-
-    def __init__(self, *cols):
-        self._ = cols                # can be another colMapCmd
-        for obj in self._:
-            if type(obj) is int:
-                assert obj <= MAX_COL
-        
-    def evaluate(self, fromSheet, row):
-        if len(self._) == 1:
-            return fromSheet.cell(row, self._.get(0)).value
-        else:
-            args = []
-            for i in range(1, len(self)):
-                args[i] = self._.get(i).evaluate(fromSheet, row)
-            return self._.get(0)(args)
-        
-        
 """
 colAtoInt
 accepts a column index string in typical excel format 
@@ -65,7 +45,18 @@ def MapCmdConvert(mapCmd):
         if k != colIdx:
             mapCmd[colIdx] = mapCmd.pop(k)
             
-
+            
+def evalOpList(opList, fromSheet, row):
+    if opList.count() == 1:
+        return fromSheet.cell(row, self._.get(0)).value
+    else:
+        args = list()
+        itOpList = iter(opList)
+        next(itOpList)
+        args = [evalOpList(it, fromSheet, row) for it in itOpList]
+        return opList.get(0)(args)
+        
+        
 def interpColMap(mapCmd, fmSheet, toSheet,
                  topRow=2, bottomRow=0, toTopRow=2):
     if bottomRow < 1:
@@ -73,5 +64,5 @@ def interpColMap(mapCmd, fmSheet, toSheet,
     MapCmdConvert(mapCmd)
     assert topRow < bottomRow and toTopRow > 0
     for row in range(topRow, bottomRow):
-        for key in list(mpCmd.keys()):
-            toSheet.write(row, key, mpCmd[key].evaluate(fmSheet, row))
+        for key in list(mapCmd.keys()):
+            toSheet.write(row, key, evalOpList(mpCmd[key], fmSheet, row))
