@@ -14,6 +14,26 @@ EXCEL2010_MAXCOL = 16372 #is this in xlrd/xlwt?
 EXCEL2008_MAXCOL = 256
 MAX_COL = EXCEL2008_MAXCOL
 
+
+
+class opList(list):
+
+    def __init__(self, *cols):
+        self._ = cols                # can be another colMapCmd
+        for obj in self._:
+            if type(obj) is int:
+                assert obj <= MAX_COL
+        
+    def evaluate(self, fromSheet, row):
+        if len(self._) == 1:
+            return fromSheet.cell(row, self._.get(0)).value
+        else:
+            args = []
+            for i in range(1, len(self)):
+                args[i] = self._.get(i).evaluate(fromSheet, row)
+            return self._.get(0)(args)
+        
+        
 """
 colAtoInt
 accepts a column index string in typical excel format 
@@ -39,26 +59,6 @@ def colName_to_colIndex(colName):
     return index
     
     
-
-class opList(list):
-
-    def __init__(self, *cols):
-        self._ = cols                # can be another colMapCmd
-        for obj in self._:
-            if type(obj) is int:
-                assert obj <= MAX_COL
-        
-    def evaluate(self, fromSheet, row):
-        if len(self._) == 1:
-            return fromSheet.cell(row, self._.get(0)).value
-        else:
-            args = []
-            for i in range(1, len(self)):
-                args[i] = self._.get(i).evaluate(fromSheet, row)
-            return self._.get(0)(args)
-        
-        
-
 def MapCmdConvert(mapCmd):
     for k in mapCmd.keys():
         colIdx = colName_to_colIndex(k): # convert to integer
