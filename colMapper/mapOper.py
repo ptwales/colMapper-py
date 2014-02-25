@@ -2,24 +2,23 @@ from operator import mul
 
 __FAIL__ = "~FAIL!"
 
-"""
-def __stripNULL__(valueList):
-    for value in valueList:
-        if value = NULL:
-            valueList.remove(value)
-"""
+
+def stripNull(valueList):
+    valueList = [notNull for notNull in valueList if notNull]
 
 
 def mapVal(valueList):
+    assert valueList.count() == 1
     return valueList[0]
+
 
 def mapSum(valueList):
     return sum(valueList)
 
 
 def mapAss(valueList):
-    #__stripNull__(valueList)
-    if len(valueList) == 1:
+    stripNull(valueList)
+    if valueList.count() == 1:
         return valueList[0]
     else:
         for i in range(0, len(valueList) - 1):
@@ -30,23 +29,19 @@ def mapAss(valueList):
 
 def mapCond(valueList):
     # valueList = (X == Y, TRUE_VALUE, FALSE_VALUE)
-    assert len(valueList) == 4
+    assert valueList.count() == 4
     return valueList[2] if valueList[0] == valueList[1] else valueList[3]
 
 
 def mapProd(valueList):
-    #__stripNull__(valueList)
+    stripNull(valueList)
     return reduce(mul, valueList, 1)
 
 
-tokenReg = {
+tokenDict = {
     '$': mapVal,
     '==': mapAss,
     '+': mapSum,
     '*': mapProd,
     '?': mapCond,
     }
-
-
-def getTokenReg(token):
-    return tokenReg.get(token)
