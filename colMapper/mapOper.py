@@ -8,7 +8,7 @@ def stripNull(valueList):
 
 
 def mapVal(valueList):
-    assert valueList.count() == 1
+    assert len(valueList) == 1
     return valueList[0]
 
 
@@ -18,7 +18,7 @@ def mapSum(valueList):
 
 def mapAss(valueList):
     stripNull(valueList)
-    if valueList.count() == 1:
+    if len(valueList) == 1:
         return valueList[0]
     else:
         for i in range(0, len(valueList) - 1):
@@ -29,7 +29,7 @@ def mapAss(valueList):
 
 def mapCond(valueList):
     # valueList = (X == Y, TRUE_VALUE, FALSE_VALUE)
-    assert valueList.count() == 4
+    assert len(valueList) == 4
     return valueList[2] if valueList[0] == valueList[1] else valueList[3]
 
 
