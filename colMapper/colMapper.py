@@ -36,7 +36,6 @@ def colName_to_colIndex(colName):
             index += place * (int(c, 36) - 9)
             place *= 26  # Grossest part is that this executes after we are done
     assert index <= MAX_COL  # check if larger than column count
-    return index - 1  # 0 offset
 
 
 def MapCmdConvert(mapCmd):
@@ -50,19 +49,16 @@ def evalOpList(opList, fromSheet, row):
     if type(opList) is str:
         return opList
     elif type(opList) is int:
-        return fromSheet.cell(row, opList - 1).value  # 0 offset
+        return fromSheet.cell(row, opList).value
     else:
         args = list()
         itOpList = iter(opList)
         next(itOpList)
         args = [evalOpList(it, fromSheet, row) for it in itOpList]
-        return opList[0](args)
+        return opList[0](*args)
 
 
-def interpColMap(mapCmd, fmSheet, toSheet, rTop=1, rBot=0, rToTop=1):
-    rTop -= 1  # 0 offset
-    rBot -= 1  # 0 offset
-    rToTop -= 1  # 0 offset
+def interpColMap(mapCmd, fmSheet, toSheet, rTop=0, rBot=0, rToTop=0):
     if rBot < 0:
         rBot = fmSheet.nrows
     MapCmdConvert(mapCmd)
