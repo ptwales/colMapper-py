@@ -35,8 +35,9 @@ def colName_to_colIndex(colName):
         for c in reversed(colName):
             index += place * (int(c, 36) - 9)
             place *= 26  # Grossest part is that this executes after we are done
+        index -= 1
     assert index <= MAX_COL  # check if larger than column count
-
+    return index
 
 def MapCmdConvert(mapCmd):
     for k in list(mapCmd.keys()):
@@ -44,12 +45,44 @@ def MapCmdConvert(mapCmd):
         if k != colIdx:
             mapCmd[colIdx] = mapCmd.pop(k)
 
+'''
+class loc(tuple):
+    
+    def __init__(self, col, rOff=0):
+        self.c = colName_to_colIndex(col) if type(col) is str else col
+        self.roff = rOff
+        
+        
+    def colName_to_colIndex(colName):
+        index = 0
+        if type(colName) is str:
+            assert len(colName) <= 3
+            place = 1
+            #Original used [::-1]. I heard this was faster. Should test it
+            for c in reversed(colName):
+                index += place * (int(c, 36) - 9)
+                place *= 26  # Grossest part is that this executes after we are done
+            index -= 1
+        assert index <= MAX_COL  # check if larger than column count
+        return index
+    
+    def get(self, sheet):
+        return sheet.cells(self.c, self.roff).value
+        
+        
+        
+'''
 
 def evalOpList(opList, fromSheet, row):
     if type(opList) is str:
         return opList
     elif type(opList) is int:
         return fromSheet.cell(row, opList).value
+    '''
+    elif type(opList) is tpl:
+        col, rOffset = opList
+        return fromSheet.cell(row + rOffset, col).value
+    '''
     else:
         args = list()
         itOpList = iter(opList)
