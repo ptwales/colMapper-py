@@ -1,4 +1,5 @@
 from operator import mul
+import re
 
 __FAIL__ = "~FAIL!"
 
@@ -7,16 +8,16 @@ def stripNull(valueList):
     valueList = [notNull for notNull in valueList if notNull]
 
 
-def mapVal(valueList):
-    assert len(valueList) == 1
-    return valueList[0]
+def mapVal(value):
+    return value
 
 
-def mapSum(valueList):
+def mapSum(*valueList):
+    stripNull(valueList)
     return sum(valueList)
 
 
-def mapAss(valueList):
+def mapAss(*valueList):
     stripNull(valueList)
     if len(valueList) == 1:
         return valueList[0]
@@ -27,15 +28,17 @@ def mapAss(valueList):
         return valueList[0]
 
 
-def mapCond(valueList):
-    # valueList = (X == Y, TRUE_VALUE, FALSE_VALUE)
-    assert len(valueList) == 4
-    return valueList[2] if valueList[0] == valueList[1] else valueList[3]
+def mapCond(x, y, true_case, false_case):
+    return true_case if x == y else false_case
 
 
-def mapProd(valueList):
+def mapProd(*valueList):
     stripNull(valueList)
     return reduce(mul, valueList, 1)
+   
+    
+def mapRegEx_match(regular_expression, some_string):
+    return re.match(regular_expression, some_string)  # double check that.
 
 
 tokenDict = {
@@ -44,4 +47,5 @@ tokenDict = {
     '+': mapSum,
     '*': mapProd,
     '?': mapCond,
+    '^': mapRegEx_match
     }
