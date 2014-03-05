@@ -11,11 +11,11 @@ tws = twb.add_sheet('Sheet 1')
 demoCmd = defaultdict(list)
 demoCmd = {
     'A': [mapOper.mapVal, 'Hello, World'],
-    'B': [mapOper.mapSum, 1, 2, 3],
-    'C': [mapOper.mapAss, 4, 5, 6],
-    'D': [mapOper.mapProd, [mapOper.mapSum, 2, 1], 1, 2],
-    'E': 6
+    'B': [mapOper.mapSum, 0, 1, 2],
+    'C': [mapOper.mapAss, 3, 4, 5],
+    'D': [mapOper.mapProd, [mapOper.mapSum, 1, 0], 0, 1],
+    'E': 5
     }
 
-colMapper.interpColMap(demoCmd, fws, tws, 1, 0, 1)
+colMapper.interpColMap(demoCmd, fws, tws)
 twb.save('out_demo_1.xls')
