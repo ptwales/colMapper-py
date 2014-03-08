@@ -3,22 +3,17 @@ import re
 
 __FAIL__ = "~FAIL!"
 
-
-def stripNull(valueList):
-    valueList = [notNull for notNull in valueList if notNull]
-
-
 def mapVal(value):
     return value
 
 
 def mapSum(*valueList):
-    stripNull(valueList)
+    filter(None, valueList)
     return sum(valueList)
 
 
-def mapAss(*valueList):
-    stripNull(valueList)
+def mapAssert(*valueList):
+    filter(None, valueList)
     if len(valueList) == 1:
         return valueList[0]
     else:
@@ -33,7 +28,7 @@ def mapCond(x, y, true_case, false_case):
 
 
 def mapProd(*valueList):
-    stripNull(valueList)
+    filter(None, valueList)
     return reduce(mul, valueList, 1)
    
     
@@ -43,7 +38,7 @@ def mapRegEx_match(regular_expression, some_string):
 
 tokenDict = {
     '$': mapVal,
-    '==': mapAss,
+    '==': mapAssert,
     '+': mapSum,
     '*': mapProd,
     '?': mapCond,
