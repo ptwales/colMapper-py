@@ -12,7 +12,7 @@ demoCmd = defaultdict(list)
 demoCmd = {
     'A': [mapOper.mapVal, 'Hello, World'],
     'B': [mapOper.mapSum, 0, 1, 2],
-    'C': [mapOper.mapAss, 3, 4, 5],
+    'C': [mapOper.mapAssert, 3, 4, 5],
     'D': [mapOper.mapProd, [mapOper.mapSum, 1, 0], 0, 1],
     'E': 5
     }
