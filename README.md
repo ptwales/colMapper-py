@@ -34,16 +34,16 @@ Consider this example from `demo_01.py`,
         'E': 5
         }
         
-Column `'A'` will become 'Hello, World' in every cell.
-Column `'E'` will become the column `'F'` of the source worksheet.
-`'B'` will be the sum of columns `'A'`, `'B'`, and `'C'` from the source worksheet.
-Column `'D'` (column index `3`) will be `('A'+'B')*'A'*'B'`.
+Column **A** will become 'Hello, World' in every cell.
+Column **E** will become the column **F** of the source worksheet.
+**B** will be the sum of columns **A**, **B**, and **C** from the source worksheet.
+Column **D** (column index 3) will be `('A'+'B')*'A'*'B'`.
 
 `mapOper.py` intends to contain convienent functions to use.
 _EG_ `mapOper.mapSum` filters null cells which would cause standard Python `Sum()` to raise an error.
 
 Note there is an inconvience in the convention that _all strings are values and all integers are indexes_.
-If you want destination column `'A'` to be a single increment of source column `'A'`. 
+If you want destination column **A** to be a single increment of source column **A**. 
 Then the command must be,
 
     'A': [Sum, 0, [int, '1']]  # Untested
