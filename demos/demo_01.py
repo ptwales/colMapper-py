@@ -7,7 +7,6 @@ fwb = xlrd.open_workbook('demo_1.xls')
 fws = fwb.sheet_by_index(0)
 twb = xlwt.Workbook()
 tws = twb.add_sheet('Sheet 1')
-''' Debating new form
 
 
 def myFunc(x, y):
@@ -27,15 +26,8 @@ demoCmd = {
 'H': ((lambda x, y: x**y), [2, 3]),  # Lambdas are ok too.
 'I': (mapOper.mapAssert, [4, 5, 6])  # Some neat functions are provided.
 }
-'''
-demoCmd = defaultdict(list)
-demoCmd = {
-    'A': [mapOper.mapVal, 'Hello, World'],
-    'B': [mapOper.mapSum, 0, 1, 2],
-    'C': [mapOper.mapAssert, 3, 4, 5],
-    'D': [mapOper.mapProd, [mapOper.mapSum, 1, 0], 0, 1],
-    'E': 5
-    }
+
+
 
 colMapper.interpColMap(demoCmd, fws, tws)
 twb.save('out_demo_1.xls')
