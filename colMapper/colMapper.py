@@ -32,22 +32,31 @@ def __MapCmdConvert(mapCmd):
             mapCmd[colIdx] = mapCmd.pop(k)
 
 
-def evalOpList(opList, fromSheet, row):
-    if type(opList) is str:
-        return opList
-    elif type(opList) is int:
-        return fromSheet.cell(row, opList).value
+'''
+@author Philip Wales
+
+@param Ops 
+@param fromSheet
+@param r
+'''
+def __evalOps(Ops, fws, r):
+    if type(Ops) is str:
+        return Ops
+    elif type(Ops) is int:
+        return fws.cell(r, Ops).value
     else:
-        itOpList = iter(opList)
-        next(itOpList)
-        return opList[0](*[evalOpList(it, fromSheet, row) for it in itOpList])
+        return Ops[0](*[__evalOps(o, fws, r) for o in Ops[1]])
 
+'''
+@author Philip Wales
 
+@param
+'''
 def interpColMap(mapCmd, fmSheet, toSheet, rTop=0, rBot=0, rToTop=0):
     if rBot < 0:
-        rBot = fmSheet.nrows
-    __MapCmdConvert(mapCmd)
+        rBot = fmSheet.nrows  # somehow make this default arg
+    __MapCmdConvert(mapCmd)  # convert all colNames to colIndex
     assert rTop < rBot and rToTop >= 0
     for row in range(rTop, rBot):
         for key in list(mapCmd.keys()):
-            toSheet.write(row, key, evalOpList(mapCmd[key], fmSheet, row))
+            toSheet.write(row, key, __evalOps(mapCmd[key], fmSheet, row))
