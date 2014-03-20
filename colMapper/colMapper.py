@@ -55,8 +55,39 @@ def __evalOps(Ops, fws, r):
 def interpColMap(mapCmd, fmSheet, toSheet, rTop=0, rBot=0, rToTop=0):
     if rBot < 0:
         rBot = fmSheet.nrows  # somehow make this default arg
-    __MapCmdConvert(mapCmd)  # convert all colNames to colIndex
+    __MapCmdConvert(mapCmd)   # convert all colNames to colIndex
     assert rTop < rBot and rToTop >= 0
     for row in range(rTop, rBot):
         for key in list(mapCmd.keys()):
             toSheet.write(row, key, __evalOps(mapCmd[key], fmSheet, row))
+
+'''Playing with byRow
+mapCols=True
+mapRows=False
+
+
+def __evalOps(Ops, fws, i, a):
+    if type(Ops) is str:
+        return Ops
+    elif type(Ops) is int:
+        return fws.cell(*a(i, Ops)).value
+    else:
+        return Ops[0](*[__evalOps(o, fws, i, a) for o in Ops[1]])
+
+
+def interpMap(mapCmd, fmSheet, toSheet, mapBy=mapCols,
+              from_start=-1, from_end=0, to_start=0):
+    if mapBy == mapCols:
+        if from_end < 0: from_end = fmSheet.nrows
+        a = (lambda r, k: r, k)
+        __MapCmdConvert(mapCmd)
+    else: # mapBy == mapRows 
+        if from_end < 0: from_end = fmSheet.ncols
+        a = (lambda c, k: k, c)
+        # no such thing as rowNames
+    assert from_start < from_end and to_start >= 0
+    for i in range(from_start, from_end):
+        for key in list(mapCmd.keys()):
+            toSheet.write(*a(i, key), __evalOps(mapCmd[key], fmSheet, i, a))
+'''
+    
