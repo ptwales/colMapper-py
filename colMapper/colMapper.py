@@ -76,8 +76,8 @@ def __evalOps(Ops, fws, i, a):
 
 
 def interpMap(mapCmd, fmSheet, toSheet, mapBy=mapCols,
-              from_start=-1, from_end=0, to_start=0):
-    if mapBy == mapCols:
+              from_start=0, from_end=-1, to_start=0):
+    if mapBy:  # mapBy == mapCols
         if from_end < 0: from_end = fmSheet.nrows
         a = (lambda r, k: r, k)
         __MapCmdConvert(mapCmd)
@@ -90,4 +90,32 @@ def interpMap(mapCmd, fmSheet, toSheet, mapBy=mapCols,
         for key in list(mapCmd.keys()):
             toSheet.write(*a(i, key), __evalOps(mapCmd[key], fmSheet, i, a))
 '''
+
+def interpSubMapping(mapCmd, fmSheet, toSheet, idLocs, mapBy=mapCols,
+                     from_start=0, from_end=-1, to_start=0):
+    pass
+'''
+    def genSubSheets():
+        yield ss
+        
+    sub_sheets = genSubSheets()
+    to_end = to_start
+    for ss in sub_sheets:
+        interpMap(mapCmd, ss, toSheet, !mapBy, to_start:=to_end)
+        to_end = toSheet.
+'''          
+
+# this might make things so much easier   
+def pullSheet(s, r0=0, c0=0, rf=-1, cf=-1):
+    if rf == -1: rf = s.nrows
+    if cf == -1: cf = s.ncols
+    assert r0 < rf and c0 < cf
+    x0 = 0: y0 = 0 
+    xf = rf - r0
+    yf = cf - c0
+    m = [[0 for y in range(y0, yf)] for x in range(x0, xf]
+    for x, r in range(x0, xf), range(r0, rf):
+        for y, c in range(y0, yf), range(c0, cf):
+            m[x][y] = s.cells(r,c).value
+    return m
     
