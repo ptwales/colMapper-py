@@ -3,6 +3,11 @@ import re
 
 __FAIL__ = "~FAIL!"
 
+
+def __stripNull(vlist):
+    [_f for _f in vlist if _f]
+
+
 def mapVal(value):
     return value
 
@@ -30,8 +35,8 @@ def mapCond(x, y, true_case, false_case):
 def mapProd(*valueList):
     filter(None, valueList)
     return reduce(mul, valueList, 1)
-   
-    
+
+
 def mapRegEx_match(regular_expression, some_string):
     return re.match(regular_expression, some_string)  # double check that.
 

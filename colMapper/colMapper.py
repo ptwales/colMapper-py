@@ -1,5 +1,3 @@
-#import xlutils
-
 mapCols = True
 mapRows = False
 EXCEL2010_MAXCOL = 16372
@@ -8,7 +6,7 @@ MAX_COL = EXCEL2008_MAXCOL
 
 
 # this might make things so much easier or not
-def __pullSheet(s, r0=0, c0=0, rf=-1, cf=-1):
+def pullSheet(s, r0=0, c0=0, rf=-1, cf=-1):
     if rf == -1:
         rf = s.nrows
     if cf == -1:
@@ -18,11 +16,11 @@ def __pullSheet(s, r0=0, c0=0, rf=-1, cf=-1):
     y0 = 0
     xf = rf - r0
     yf = cf - c0
-    m = [[0 for y in range(y0, yf)] for x in range(x0, xf)]
-    for x, r in list(range(x0, xf)), list(range(r0, rf)):
-        for y, c in list(range(y0, yf)), list(range(c0, cf)):
-            m[x][y] = s.cells(r, c).value
-    return m
+    M = [[0 for y in range(y0, yf)] for x in range(x0, xf)]
+    for x, r in zip(range(x0, xf), range(r0, rf)):
+        for y, c in zip(range(y0, yf), range(c0, cf)):
+            M[x][y] = s.cell(r, c).value
+    return M
 
 '''
 colAtoInt
@@ -124,6 +122,3 @@ def interpSubMapping(mapCmd, subSheets, toSheet, idLocs, mapBy=mapCols,
     for ss in subSheets:
         interpMap(mapCmd, ss, toSheet, (not mapBy), to_start=to_end)
         to_end += max(mapCmd.keys()) + 1
-
-
-
