@@ -5,7 +5,7 @@ __FAIL__ = "~FAIL!"
 
 
 def __stripNull(vlist):
-    [_f for _f in vlist if _f]
+    return [v for v in vlist if v]
 
 
 def mapVal(value):
@@ -13,12 +13,12 @@ def mapVal(value):
 
 
 def mapSum(*valueList):
-    filter(None, valueList)
+    valueList = __stripNull(valueList)
     return sum(valueList)
 
 
 def mapAssert(*valueList):
-    filter(None, valueList)
+    valueList = __stripNull(valueList)
     if len(valueList) == 1:
         return valueList[0]
     else:
@@ -33,7 +33,7 @@ def mapCond(x, y, true_case, false_case):
 
 
 def mapProd(*valueList):
-    filter(None, valueList)
+    valueList = __stripNull(valueList)
     return reduce(mul, valueList, 1)
 
 

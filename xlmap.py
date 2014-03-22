@@ -17,6 +17,19 @@ def pullSheet(s, r0=0, c0=0, rf=-1, cf=-1):
     return M
 
 
+def writeSheet(s, B, r0=0, c0=0):
+    for x in range(len(B)):
+        for y in range(len(B[x])):  # assert len(B[r]) == len(D)
+            s.write(r0 + x, c0 + y, B[x][y])
+
+
+def __insertNullRows(M, D):
+    B = __prealloc(max(D.keys()), len(M[0]))
+    for r, k in zip(range(len(M)), D):
+        B[k] = M[r]
+    return B
+
+
 mapRow = False
 mapCol = True
 
@@ -32,9 +45,32 @@ def __evalMapCmd(f, r):
 
 
 # default is by cols of F and rows of M
-def __mMap(M, F): # [M].[F] = [B]
-    B = __prealloc(len(M), len(F))
-    for M_r, B_r in zip(M, B):
-        for B_el, f in zip(B_r, F):
-            B_el = __evalMapCmd(f, M_r)
+# M must be transposed beforehand for other method
+def __mMap(M, F):  # [M].[F] = [B]
+    X = len(M)
+    Y = len(F)
+    B = __prealloc(X, Y)
+    for r, x in zip(M, range(X)):
+        for f, y in zip(F, range(Y)):
+            B[x][y] = __evalMapCmd(f, r)
     return B
+
+
+def xlmap(Cmd, fSheet, tSheet, mapX=mapCol,
+          fStart=0, fStop=-1, tStart=0):
+    if fStop == -1:
+        fStop = fSheet.nrows if mapX else fSheet.ncols
+    assert fStart < fStop
+    if mapX:
+        M = pullSheet(fSheet, r0=fStart, rf=fStop)
+        #__ReplaceColNames(Cmd)
+    else:
+        M = pullSheet(fSheet, c0=fStart, cf=fStop)
+        # transpose M
+    M = __mMap(M, [Cmd[k] for k in Cmd])
+    M = __insertNullRows(M, Cmd)
+    if mapX:
+        writeSheet(fSheet, M, r0=tStart)
+    else:
+        # transpose M
+        writeSheet(fSheet, M, c0=tStart)
