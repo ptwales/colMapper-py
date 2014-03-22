@@ -3,17 +3,22 @@ import re
 
 __FAIL__ = "~FAIL!"
 
+
+def __stripNull(vlist):
+    return [v for v in vlist if v]
+
+
 def mapVal(value):
     return value
 
 
 def mapSum(*valueList):
-    filter(None, valueList)
+    valueList = __stripNull(valueList)
     return sum(valueList)
 
 
 def mapAssert(*valueList):
-    filter(None, valueList)
+    valueList = __stripNull(valueList)
     if len(valueList) == 1:
         return valueList[0]
     else:
@@ -28,10 +33,10 @@ def mapCond(x, y, true_case, false_case):
 
 
 def mapProd(*valueList):
-    filter(None, valueList)
+    valueList = __stripNull(valueList)
     return reduce(mul, valueList, 1)
-   
-    
+
+
 def mapRegEx_match(regular_expression, some_string):
     return re.match(regular_expression, some_string)  # double check that.
 
