@@ -29,5 +29,5 @@ demoCmd = {
 
 
 
-colMapper.interpColMap(demoCmd, fws, tws)
+colMapper.interpMap(demoCmd, fws, tws)
 twb.save('out_demo_1.xls')
