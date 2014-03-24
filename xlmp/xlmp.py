@@ -23,11 +23,12 @@ def __pullSheet(s, r0=0, c0=0, rf=-1, cf=-1):
 
 def writeSheet(s, B, r0=0, c0=0):
     for x in range(len(B)):
-        for y in range(len(B[x])):  # assert len(B[r]) == len(D)
+        for y in range(len(B[x])):
             s.write(r0 + x, c0 + y, B[x][y])
 
 
 def __insertNullRows(M, D):
+    assert len(M) == len(D)
     B = __prealloc(max(D.keys()), len(M[0]))
     for r, k in zip(range(len(M)), D):
         B[k] = M[r]
@@ -46,7 +47,7 @@ def __evalMapCmd(f, r):
 
 # default is by cols of F and rows of M
 # M must be transposed beforehand for other method
-def __mMap(M, F):  # [M].[F] = [B]
+def __mMap(M, F):  # [M].[F] = [B], flip this
     X = len(M)
     Y = len(F)
     B = __prealloc(X, Y)
@@ -79,6 +80,7 @@ def xlmap(Cmd, fSheet, tSheet, mapX=mapCol,
         writeSheet(tSheet, M, c0=tStart)
 
 
+# define functions to create subSheets, which will be matricies.
 def xlSubMapping(subCmd, subSheets, fSheet, tSheet, mapX=mapRow,
                  tStart=0):
     if mapX:
