@@ -2,10 +2,6 @@ mapRow = False
 mapCol = True
 
 
-def derp():
-    print("Hello World")
-
-
 def __prealloc(X, Y):
     return [[None for y in range(Y)] for x in range(X)]
 
