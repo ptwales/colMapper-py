@@ -84,9 +84,6 @@ def __transpose(M):
 
 def xlmap(Cmd, fSheet, tSheet, mapX=mapCol,
           fStart=0, fStop=-1, tStart=0):
-    if fStop == -1:
-        fStop = fSheet.nrows if mapX else fSheet.ncols
-    assert fStart < fStop
     if mapX:
         M = pullSheet(fSheet, r0=fStart, rf=fStop)
         #__ReplaceColNames(Cmd)
