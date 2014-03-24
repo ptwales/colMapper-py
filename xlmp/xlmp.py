@@ -1,8 +1,16 @@
+mapRow = False
+mapCol = True
+
+
+def derp():
+    print("Hello World")
+
+
 def __prealloc(X, Y):
-    return [[0 for y in range(Y)] for x in range(X)]
+    return [[None for y in range(Y)] for x in range(X)]
 
 
-def pullSheet(s, r0=0, c0=0, rf=-1, cf=-1):
+def __pullSheet(s, r0=0, c0=0, rf=-1, cf=-1):
     if rf == -1:
         rf = s.nrows
     if cf == -1:
@@ -30,10 +38,6 @@ def __insertNullRows(M, D):
     return B
 
 
-mapRow = False
-mapCol = True
-
-
 def __evalMapCmd(f, r):
     if type(f) is str:
         return f
@@ -56,21 +60,32 @@ def __mMap(M, F):  # [M].[F] = [B]
     return B
 
 
+def __transpose(M):
+    return zip(*M)
+
+
 def xlmap(Cmd, fSheet, tSheet, mapX=mapCol,
           fStart=0, fStop=-1, tStart=0):
     if fStop == -1:
         fStop = fSheet.nrows if mapX else fSheet.ncols
     assert fStart < fStop
     if mapX:
-        M = pullSheet(fSheet, r0=fStart, rf=fStop)
+        M = __pullSheet(fSheet, r0=fStart, rf=fStop)
         #__ReplaceColNames(Cmd)
     else:
-        M = pullSheet(fSheet, c0=fStart, cf=fStop)
-        # transpose M
+        M = __transpose(__pullSheet(fSheet, c0=fStart, cf=fStop))
     M = __mMap(M, [Cmd[k] for k in Cmd])
     M = __insertNullRows(M, Cmd)
     if mapX:
-        writeSheet(fSheet, M, r0=tStart)
+        writeSheet(tSheet, M, r0=tStart)
     else:
-        # transpose M
-        writeSheet(fSheet, M, c0=tStart)
+        M = __transpose(M)
+        writeSheet(tSheet, M, c0=tStart)
+
+
+def xlSubMapping(subCmd, subSheets, fSheet, tSheet, mapX=mapRow,
+                 tStart=0):
+    if mapX:
+        pass
+    else:
+        pass

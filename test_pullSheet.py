@@ -1,6 +1,6 @@
 import xlwt
 import xlrd
-from colMapper import colMapper
+from xlmp import xlmp
 import string
 
 
@@ -17,5 +17,5 @@ if __name__ == '__main__':
     makeTestBook('test.ods', 'test')
     book = xlrd.open_workbook('test.ods')
     sheet = book.sheet_by_index(0)
-    M = colMapper.pullSheet(sheet)
+    M = xlmp.__pullSheet(sheet)
     print(M)
