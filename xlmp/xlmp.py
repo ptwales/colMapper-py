@@ -1,6 +1,6 @@
-mapRow = False
-mapCol = True
-#map_byCol_not_byRow = True
+#mapRow = False
+#mapCol = True
+map_byCol_not_byRow = True
 
 
 ##
@@ -16,27 +16,35 @@ def __prealloc(X, Y):
 ##
 # ONLY XLRD Dependency
 # creates matrix of values of xlrd.Sheet object
-def pullSheet(s, r0=0, c0=0, rf=-1, cf=-1):
+def pullSheet(s, xr=(0,-1), yr=(0,-1)):
     assert not s.ragged_rows
-    if rf < 0:
-        rf += s.nrows
-    if cf < 0:
-        cf += s.ncols
     M = [[]]
-    for r in range(r0, rf):
-        M.append(s.row_values(r, c0, cf))
-    return M
+    rect = (xr, yr)
+    if not map_byCol_not_byRow:
+        rect = reversed(rect)
+    if rect[0][1] < 0:
+        rect[0][1] += s.nrows
+    for r in range(*rect[0]):
+        M.append(s.row_values(r, *rect[1]))
+    if map_byCol_not_byRow:
+        return M
+    else:
+        return zip(*M)
 
 
 ##
 # ONLY XLWT dependency
 # writes maxtrix M to xlwt.Sheet object
 # offset by r0 and c0
-def writeSheet(s, M, r0=0, c0=0):
-    assert r0 >= 0 and c0 >= 0
+def writeSheet(s, M, p=(0,0)):
+    for i in p:
+        assert i >= 0
+    if not map_byCol_not_byRow:
+        M = zip(*M)
+        p = reversed(p)
     for x in range(len(M)):
         for y in range(len(M[x])):
-            s.write(r0 + x, c0 + y, M[x][y])
+            s.write(p[0] + x, p[1] + y, M[x][y])
 
 
 ### END python-excel dependencies
@@ -72,8 +80,8 @@ def __evalMapCmd(f, r):
 def __mMap(M, F):
     X = len(M)
     Y = len(F)
-    B = __prealloc(X, Y)
-    for r, i in zip(M, range(X)):  # should not need __prealloc here
+    B = __prealloc(X, Y)  # should not need __prealloc here
+    for r, i in zip(M, range(X)):
         for f, j in zip(F, range(Y)):
             B[i][j] = __evalMapCmd(f, r)
     return B
@@ -85,17 +93,14 @@ def __transpose(M):
     return zip(*M)
 
 
-def xlmap(Cmd, fSheet, tSheet, mapX=mapCol,
-          fStart=0, fStop=-1, tStart=0):
-    if mapX:  # move this to pullSheet and writeSheet
-        M = pullSheet(fSheet, r0=fStart, rf=fStop)
+def xlmap(Cmd, fSheet, tSheet, mapX=map_byCol_not_byRow,
+          frng=(0,-1), tp=(0,0)):
+    global map_byCol_not_byRow
+    map_byCol_not_byRow = mapX
+    M = pullSheet(fSheet, frng)
+    if mapX:
         #__ReplaceColNames(Cmd)
-    else:
-        M = __transpose(pullSheet(fSheet, c0=fStart, cf=fStop))
+        pass
     M = __mMap(M, [Cmd[k] for k in Cmd])
     M = __insertNullRows(M, Cmd)
-    if mapX:
-        writeSheet(tSheet, M, r0=tStart)
-    else:
-        M = __transpose(M)
-        writeSheet(tSheet, M, c0=tStart)
+    writeSheet(tSheet, M, tp)
