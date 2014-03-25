@@ -3,13 +3,6 @@
 map_byCol_not_byRow = True
 
 
-##
-# Preallocation of Matrix M, assures that it is of the correct dimensions
-# probably poor form
-def __prealloc(X, Y):
-    return [[None for y in range(Y)] for x in range(X)]
-
-
 ### python-excel dependencies
 ### mapCol and mapRow should only be in these two
 ### So it should read it transposed and write it transposed
@@ -18,12 +11,12 @@ def __prealloc(X, Y):
 # creates matrix of values of xlrd.Sheet object
 def pullSheet(s, xr=(0,-1), yr=(0,-1)):
     assert not s.ragged_rows
-    M = [[]]
     rect = (xr, yr)
     if not map_byCol_not_byRow:
         rect = reversed(rect)
     if rect[0][1] < 0:
         rect[0][1] += s.nrows
+    M = []
     for r in range(*rect[0]):
         M.append(s.row_values(r, *rect[1]))
     if map_byCol_not_byRow:
@@ -45,9 +38,8 @@ def writeSheet(s, M, p=(0,0)):
     for x in range(len(M)):
         for y in range(len(M[x])):
             s.write(p[0] + x, p[1] + y, M[x][y])
-
-
 ### END python-excel dependencies
+
 
 ##
 # M might be a smaller matrix than the range on the sheet
@@ -56,7 +48,7 @@ def writeSheet(s, M, p=(0,0)):
 # a blank row in column 2
 def __insertNullRows(M, D):
     assert len(M) == len(D)
-    B = __prealloc(max(D.keys()), len(M[0]))  # only place I should need __prealloc
+    B = [[None for y in range(max(D.keys()))] for x in range(len(M[0]))]
     for r, k in zip(range(len(M)), D):
         B[k] = M[r]
     return B
@@ -78,19 +70,12 @@ def __evalMapCmd(f, r):
 # default is by cols of F and rows of M
 # M must be transposed beforehand for other method
 def __mMap(M, F):
-    X = len(M)
-    Y = len(F)
-    B = __prealloc(X, Y)  # should not need __prealloc here
-    for r, i in zip(M, range(X)):
-        for f, j in zip(F, range(Y)):
-            B[i][j] = __evalMapCmd(f, r)
+    B = []
+    for r in M:
+        B.append([])
+        for f in F:
+            B[-1].append( __evalMapCmd(f, r))
     return B
-
-
-##
-# transpose matrix M
-def __transpose(M):
-    return zip(*M)
 
 
 def xlmap(Cmd, fSheet, tSheet, mapX=map_byCol_not_byRow,
