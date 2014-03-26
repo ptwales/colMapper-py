@@ -11,7 +11,7 @@ map_byCol_not_byRow = True
 # creates matrix of values of xlrd.Sheet object
 def pullSheet(s, xr=(0, -1), yr=(0, -1)):
     assert not s.ragged_rows
-    rect = [[x for x in xr], [y for y in yr]]  # use better method later
+    rect = [list(xr), list(yr)]
     if not map_byCol_not_byRow:
         rect.reverse()
     if rect[0][1] < 0:
@@ -34,7 +34,7 @@ def writeSheet(s, M, p=(0, 0)):
         assert i >= 0
     if not map_byCol_not_byRow:
         M = zip(*M)
-        p = reversed(p)  # WRONG
+        p = p[::-1]
     for x in range(len(M)):
         for y in range(len(M[x])):
             s.write(p[0] + x, p[1] + y, M[x][y])
