@@ -9,11 +9,11 @@ map_byCol_not_byRow = True
 ##
 # ONLY XLRD Dependency
 # creates matrix of values of xlrd.Sheet object
-def pullSheet(s, xr=(0,-1), yr=(0,-1)):
+def pullSheet(s, xr=(0, -1), yr=(0, -1)):
     assert not s.ragged_rows
-    rect = (xr, yr)
+    rect = [[x for x in xr], [y for y in yr]]  # use better method later
     if not map_byCol_not_byRow:
-        rect = reversed(rect)
+        rect.reverse()
     if rect[0][1] < 0:
         rect[0][1] += s.nrows
     M = []
@@ -29,12 +29,12 @@ def pullSheet(s, xr=(0,-1), yr=(0,-1)):
 # ONLY XLWT dependency
 # writes maxtrix M to xlwt.Sheet object
 # offset by r0 and c0
-def writeSheet(s, M, p=(0,0)):
+def writeSheet(s, M, p=(0, 0)):
     for i in p:
         assert i >= 0
     if not map_byCol_not_byRow:
         M = zip(*M)
-        p = reversed(p)
+        p = reversed(p)  # WRONG
     for x in range(len(M)):
         for y in range(len(M[x])):
             s.write(p[0] + x, p[1] + y, M[x][y])
@@ -49,8 +49,8 @@ def writeSheet(s, M, p=(0,0)):
 def __insertNullRows(M, D):
     assert len(M) == len(D)
     B = [[None for y in range(max(D.keys()))] for x in range(len(M[0]))]
-    for r, k in zip(range(len(M)), D):
-        B[k] = M[r]
+    for r, k in zip(M, D):
+        B[k] = r
     return B
 
 
@@ -74,12 +74,12 @@ def __mMap(M, F):
     for r in M:
         B.append([])
         for f in F:
-            B[-1].append( __evalMapCmd(f, r))
+            B[-1].append(__evalMapCmd(f, r))
     return B
 
 
 def xlmap(Cmd, fSheet, tSheet, mapX=map_byCol_not_byRow,
-          frng=(0,-1), tp=(0,0)):
+          frng=(0, -1), tp=(0, 0)):
     global map_byCol_not_byRow
     map_byCol_not_byRow = mapX
     M = pullSheet(fSheet, frng)
