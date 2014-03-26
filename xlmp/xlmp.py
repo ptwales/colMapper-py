@@ -42,6 +42,24 @@ def writeSheet(s, M, p=(0, 0)):
 
 
 ##
+# Converts all of the keys that are strings to 
+# integers, assuming that strings are xl colnames.
+# unnecessary function only for client side conviencence.
+def __ReplaceColNames(D):
+    for k in list(D.keys()):
+        if type(k) is str:
+            place = 1
+            index = 0
+            for c in reversed(k):
+                index += place * (int(c, 36) - 9)
+                place *= 26  # Grossest part is that this executes after we are done
+            index -= 1
+        if k != index:
+            D[index] = D.pop(k)
+
+    
+
+##
 # M might be a smaller matrix than the range on the sheet
 # it is to print to.  _EG_ if we writing to columns, 0, 1, and 3,
 # then we M is will be of dim (:,3) and needs to become (:,4) with
@@ -84,7 +102,7 @@ def xlmap(Cmd, fSheet, tSheet, mapX=map_byCol_not_byRow,
     map_byCol_not_byRow = mapX
     M = pullSheet(fSheet, frng)
     if mapX:
-        #__ReplaceColNames(Cmd)
+        __ReplaceColNames(Cmd)
         pass
     M = __mMap(M, [Cmd[k] for k in Cmd])
     M = __insertNullRows(M, Cmd)
