@@ -1,4 +1,4 @@
-colMapper-py
+xlmp
 ============
 
 Whoa! I'm overhauling the internals right now.
