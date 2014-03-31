@@ -1,6 +1,6 @@
 #mapRow = False
 #mapCol = True
-map_byCol_not_byRow = True
+byCol_not_byRow = True
 
 
 ### python-excel dependencies
@@ -9,16 +9,12 @@ map_byCol_not_byRow = True
 ##
 # ONLY XLRD Dependency
 # creates matrix of values of xlrd.Sheet object
-def pullSheet(s, xr=(0, -1), yr=(0, -1)):
+def pullSheet(s, xrng=(0, -1), yrng=(0, -1)):
     assert not s.ragged_rows
-    rect = [list(xr), list(yr)]
-    if not map_byCol_not_byRow:
-        rect.reverse()
-    if rect[0][1] < 0:
-        rect[0][1] += s.nrows
-    M = []
-    for r in range(*rect[0]):
-        M.append(s.row_values(r, *rect[1]))
+    (crng, rrng) = (xrng, list(yrng)) if byCol_not_byRow else (yrng, list(xrng))
+    if rrng[1] < 0:
+        rrng[1] += s.nrows
+    M = [s.row_values(r, *crng for r in range(*rrng)
     if map_byCol_not_byRow:
         return M
     else:
@@ -32,7 +28,7 @@ def pullSheet(s, xr=(0, -1), yr=(0, -1)):
 def writeSheet(s, M, p=(0, 0)):
     for i in p:
         assert i >= 0
-    if not map_byCol_not_byRow:
+    if not byCol_not_byRow:
         M = zip(*M)
         p = p[::-1]
     for x in range(len(M)):
@@ -67,8 +63,8 @@ def __ReplaceColNames(D):
 def __insertNullRows(M, D):
     assert len(M) == len(D)
     B = [[None for y in range(max(D.keys()))] for x in range(len(M[0]))]
-    for r, k in zip(M, D):
-        B[k] = r
+    for m, k in zip(M, D):
+        B[k] = m
     return B
 
 
@@ -88,18 +84,13 @@ def __evalMapCmd(f, r):
 # default is by cols of F and rows of M
 # M must be transposed beforehand for other method
 def __mMap(M, F):
-    B = []
-    for r in M:
-        B.append([])
-        for f in F:
-            B[-1].append(__evalMapCmd(f, r))
-    return B
+    return [__evalMapCmd(f, m) for f in F] for m in M]
 
 
-def xlmap(Cmd, fSheet, tSheet, mapX=map_byCol_not_byRow,
+def xlmap(Cmd, fSheet, tSheet, mapX=byCol_not_byRow,
           frng=(0, -1), tp=(0, 0)):
-    global map_byCol_not_byRow
-    map_byCol_not_byRow = mapX
+    global byCol_not_byRow
+    byCol_not_byRow = mapX
     M = pullSheet(fSheet, frng)
     if mapX:
         __ReplaceColNames(Cmd)
