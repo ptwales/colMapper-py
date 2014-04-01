@@ -15,7 +15,8 @@ def genSubSheetsByIds(fmSheet, idLocs, mapX=xlmp.byCol_not_byRow,
 # define functions to create subSheets, which will be matricies.
 def xlSubMapping(subCmd, subSheets, fSheet, tSheet, mapX=not xlmp.byCol_not_byRow,
                  tp=(0,0)):
+    tx, ty = tp  # tuples are immuteable
     for m in subSheets:
         b = xlmp.__mMap(zip(*m), subCmd)
-        xlmp.writeSheet(tSheet, tp)
-        tp[0] += len(b)
+        xlmp.writeSheet(tSheet, (tx, ty))
+        tx += len(b)  # and we are modifying tx or tp[0]
