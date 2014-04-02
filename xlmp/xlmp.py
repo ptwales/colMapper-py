@@ -4,8 +4,6 @@ byCol_not_byRow = True
 
 
 ### python-excel dependencies
-### mapCol and mapRow should only be in these two
-### So it should read it transposed and write it transposed
 ##
 # ONLY XLRD Dependency
 # creates matrix of values of xlrd.Sheet object
@@ -15,10 +13,7 @@ def pullSheet(s, xrng=(0, -1), yrng=(0, -1)):
     if rrng[1] < 0:
         rrng[1] += s.nrows
     M = [s.row_values(r, *crng for r in range(*rrng)
-    if map_byCol_not_byRow:
-        return M
-    else:
-        return zip(*M)
+    return (M if byCol_not_byRow else zip(*M))
 
 
 ##
@@ -78,7 +73,7 @@ def __evalMapCmd(f, r):
     if type(f) is str:
         return f
     elif type(f) is int:
-        return r[f]
+        return r[f] # if zeroOffset else r[f-1]
     else:  # this looks like horrible recursion
         return f[0](*[__evalMapCmd(a, r) for a in f[1]])
 
@@ -92,12 +87,18 @@ def __mMap(M, F):
     B = __insertNullCols([__evalMapCmd(f, m) for f in F] for m in M], F)
 
 
+##
+# Maps from fSheet to tSheet according to Cmd
 def xlmap(Cmd, fSheet, tSheet, mapX=byCol_not_byRow,
           frng=(0, -1), tp=(0, 0)):
     global byCol_not_byRow
     byCol_not_byRow = mapX
-    M = pullSheet(fSheet, frng)
     if mapX:
         __ReplaceColNames(Cmd)
-    M = __mMap(M, [Cmd[k] for k in Cmd])
-    writeSheet(tSheet, M, tp)
+    writeSheet(tSheet, 
+               __mMap(pullSheet(fSheet, frng), 
+                      [Cmd[k] for k in Cmd]),
+               tp)
+    # M = pullSheet(fSheet, frng)
+    # M = __mMap(M, [Cmd[k] for k in Cmd])
+    # writeSheet(tSheet, M, tp)
