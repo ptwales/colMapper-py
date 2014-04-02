@@ -59,22 +59,27 @@ def __ReplaceColNames(D):
 # M might be a smaller matrix than the range on the sheet
 # it is to print to.  _EG_ if we writing to columns, 0, 1, and 3,
 # then we M is will be of dim (:,3) and needs to become (:,4) with
-# a blank row in column 2
-def __insertNullRows(M, D):
+# a blank column 2
+def __insertNullCols(M, D):
     assert len(M) == len(D)
     B = [[None for y in range(max(D.keys()))] for x in range(len(M[0]))]
-    for m, k in zip(M, D):
+    for m, k in zip(zip(*M), D):
         B[k] = m
-    return B
+    return zip(*B)
 
 
+##
+# Source of my woes
+# returns $f(\vec{r})$
+# unless f is a string then it returns f
+# or if f is an int then it returns r[f]
+# Need a better structure for handeling functions
 def __evalMapCmd(f, r):
     if type(f) is str:
         return f
     elif type(f) is int:
         return r[f]
-    else:
-        # this looks like horrible recursion
+    else:  # this looks like horrible recursion
         return f[0](*[__evalMapCmd(a, r) for a in f[1]])
 
 
@@ -84,7 +89,7 @@ def __evalMapCmd(f, r):
 # default is by cols of F and rows of M
 # M must be transposed beforehand for other method
 def __mMap(M, F):
-    return [__evalMapCmd(f, m) for f in F] for m in M]
+    B = __insertNullCols([__evalMapCmd(f, m) for f in F] for m in M], F)
 
 
 def xlmap(Cmd, fSheet, tSheet, mapX=byCol_not_byRow,
@@ -94,7 +99,5 @@ def xlmap(Cmd, fSheet, tSheet, mapX=byCol_not_byRow,
     M = pullSheet(fSheet, frng)
     if mapX:
         __ReplaceColNames(Cmd)
-        pass
     M = __mMap(M, [Cmd[k] for k in Cmd])
-    M = __insertNullRows(M, Cmd)
     writeSheet(tSheet, M, tp)
