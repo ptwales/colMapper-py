@@ -70,9 +70,9 @@ def __insertNullCols(M, D):
 # or if f is an int then it returns r[f]
 # Need a better structure for handeling functions
 def __evalMapCmd(f, r):
-    if type(f) is str:
+    if isinstance(f, str):
         return f
-    elif type(f) is int:
+    elif isinstance(f, (int, long)):
         return r[f] # if zeroOffset else r[f-1]
     else:  # this looks like horrible recursion
         return f[0](*[__evalMapCmd(a, r) for a in f[1]])
