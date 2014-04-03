@@ -1,28 +1,19 @@
 #mapRow = False
 #mapCol = True
-map_byCol_not_byRow = True
+byCol_not_byRow = True
 
 
 ### python-excel dependencies
-### mapCol and mapRow should only be in these two
-### So it should read it transposed and write it transposed
 ##
 # ONLY XLRD Dependency
 # creates matrix of values of xlrd.Sheet object
-def pullSheet(s, xr=(0, -1), yr=(0, -1)):
+def pullSheet(s, xrng=(0, -1), yrng=(0, -1)):
     assert not s.ragged_rows
-    rect = [list(xr), list(yr)]
-    if not map_byCol_not_byRow:
-        rect.reverse()
-    if rect[0][1] < 0:
-        rect[0][1] += s.nrows
-    M = []
-    for r in range(*rect[0]):
-        M.append(s.row_values(r, *rect[1]))
-    if map_byCol_not_byRow:
-        return M
-    else:
-        return zip(*M)
+    (crng, rrng) = (xrng, list(yrng)) if byCol_not_byRow else (yrng, list(xrng))
+    if rrng[1] < 0:
+        rrng[1] += s.nrows
+    M = [s.row_values(r, *crng for r in range(*rrng)
+    return (M if byCol_not_byRow else zip(*M))
 
 
 ##
@@ -32,7 +23,7 @@ def pullSheet(s, xr=(0, -1), yr=(0, -1)):
 def writeSheet(s, M, p=(0, 0)):
     for i in p:
         assert i >= 0
-    if not map_byCol_not_byRow:
+    if not byCol_not_byRow:
         M = zip(*M)
         p = p[::-1]
     for x in range(len(M)):
@@ -63,22 +54,27 @@ def __ReplaceColNames(D):
 # M might be a smaller matrix than the range on the sheet
 # it is to print to.  _EG_ if we writing to columns, 0, 1, and 3,
 # then we M is will be of dim (:,3) and needs to become (:,4) with
-# a blank row in column 2
-def __insertNullRows(M, D):
+# a blank column 2
+def __insertNullCols(M, D):
     assert len(M) == len(D)
     B = [[None for y in range(max(D.keys()))] for x in range(len(M[0]))]
-    for r, k in zip(M, D):
-        B[k] = r
-    return B
+    for m, k in zip(zip(*M), D):
+        B[k] = m
+    return zip(*B)
 
 
+##
+# Source of my woes
+# returns $f(\vec{r})$
+# unless f is a string then it returns f
+# or if f is an int then it returns r[f]
+# Need a better structure for handeling functions
 def __evalMapCmd(f, r):
-    if type(f) is str:
+    if isinstance(f, str):
         return f
-    elif type(f) is int:
-        return r[f]
-    else:
-        # this looks like horrible recursion
+    elif isinstance(f, (int, long)):
+        return r[f] # if zeroOffset else r[f-1]
+    else:  # this looks like horrible recursion
         return f[0](*[__evalMapCmd(a, r) for a in f[1]])
 
 
@@ -88,22 +84,21 @@ def __evalMapCmd(f, r):
 # default is by cols of F and rows of M
 # M must be transposed beforehand for other method
 def __mMap(M, F):
-    B = []
-    for r in M:
-        B.append([])
-        for f in F:
-            B[-1].append(__evalMapCmd(f, r))
-    return B
+    B = __insertNullCols([__evalMapCmd(f, m) for f in F] for m in M], F)
 
 
-def xlmap(Cmd, fSheet, tSheet, mapX=map_byCol_not_byRow,
+##
+# Maps from fSheet to tSheet according to Cmd
+def xlmap(Cmd, fSheet, tSheet, mapX=byCol_not_byRow,
           frng=(0, -1), tp=(0, 0)):
-    global map_byCol_not_byRow
-    map_byCol_not_byRow = mapX
-    M = pullSheet(fSheet, frng)
+    global byCol_not_byRow
+    byCol_not_byRow = mapX
     if mapX:
         __ReplaceColNames(Cmd)
-        pass
-    M = __mMap(M, [Cmd[k] for k in Cmd])
-    M = __insertNullRows(M, Cmd)
-    writeSheet(tSheet, M, tp)
+    writeSheet(tSheet, 
+               __mMap(pullSheet(fSheet, frng), 
+                      [Cmd[k] for k in Cmd]),
+               tp)
+    # M = pullSheet(fSheet, frng)
+    # M = __mMap(M, [Cmd[k] for k in Cmd])
+    # writeSheet(tSheet, M, tp)
