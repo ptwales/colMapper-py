@@ -48,6 +48,7 @@ def __writeBook(M, book_path, sheet_name='xlmp', p=(0, 0)):
     book = xlwt.Workbook()
     sheet = book.add_sheet(sheet_name)
     __writeSheet(M, sheet, p)
+    book.save(book_path)
 
 
 ###############################################################################
