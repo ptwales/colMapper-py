@@ -1,102 +1,97 @@
 import xlrd
 import xlwt
+from itertools import groupby
 
-byCol_not_byRow = True
 
-###############################################################################
-#
+##
 # XLRD XLWT Interfaces
+class ixl(object):
+
+    def __init__(self, readByRow=False):
+        self.byRow = readByRow
+
+    def __transpose(self, M):
+        return M if self.byRow else list(zip(*M))
+
+    ##
+    # creates matrix of values of xlrd.Sheet object
+    def pullSheet(self, s, cRng=(0, -1), rRng=(0, -1)):
+        assert not s.ragged_rows
+        rRng = list(*rRng)
+        if rRng[1] < 0:
+            rRng[1] += s.nrows
+        M = [s.row_values(r, *cRng) for r in range(*rRng)]
+        return self.__transpose(M)
+
+    def readBook(self, book_path, sheet_i=0, *args):
+        book = xlrd.open_workbook(book_path)
+        try:
+            sheet = book.sheet_by_index(sheet_i)
+        except TypeError:
+            sheet = book.sheet_by_name(sheet_i)
+        return self.pullSheet(sheet, *args)
+
+    def guessRead(self, book, sheet, *args):
+        try:
+            M = self.readSheet(sheet, *args)
+        except AttributeError:
+            M = self.readBook(book, sheet, *args)
+        return M
+
+    ##
+    # writes maxtrix M to xlwt.Sheet object
+    # offset by r0 and c0
+    def writeSheet(self, M, s, c0=0, r0=0):
+        M = self.__transpose(M)
+        for r in range(len(M)):
+            for c in range(len(M[r])):
+                s.write(r0 + r, c0 + c, M[r][c])
+
+    def writeBook(self, M, book_path, sheet_name='xlmp', c0=0, r0=0):
+        book = xlwt.Workbook()
+        sheet = book.add_sheet(sheet_name)
+        self.writeSheet(M, sheet, c0, r0)
+        book.save(book_path)
+
+    def guessWrite(self, M, book, sheet, *args):
+        try:
+            self.writeSheet(M, sheet, *args)
+        except AttributeError:
+            self.writeBook(M, book, sheet, *args)
+
+
+class mpCmd(dict):
+
+    def __init__(self, zeroOffset, *args):
+        self._zOff = 0 if zeroOffset else 1
+        dict.__init__(*args)
+
+    def __setitem__(self, key, val):
+        if isinstance(key, str):
+            key = self.__replaceColName(key)
+        else:
+            key += self._zOff
+        dict.__setitem__(self, key, val)
+
+    ##
+    # Converts all of the keys that are strings to
+    # integers, assuming that strings are xl colnames.
+    # unnecessary function only for client side conviencence.
+    def __ReplaceColName(self, k):
+        place = 1
+        index = 0
+        for c in reversed(k):
+            index += place * (int(c, 36) - 9)
+            place *= 26
+        index -= 1
+        return index
+
+
+###############################################################################
+#
+# Data Mapping - Maybe merge into mpCmd
 #
 ###############################################################################
-
-
-##
-# creates matrix of values of xlrd.Sheet object
-def __pullSheet(s, xrng=(0, -1), yrng=(0, -1)):
-    assert not s.ragged_rows
-    (crng, rrng) = (xrng, list(yrng)) if byCol_not_byRow else (yrng, list(xrng))
-    if rrng[1] < 0:
-        rrng[1] += s.nrows
-    M = [s.row_values(r, *crng) for r in range(*rrng)]
-    return (M if byCol_not_byRow else zip(*M))
-
-
-##
-# writes maxtrix M to xlwt.Sheet object
-# offset by r0 and c0
-def __writeSheet(M, s, p=(0, 0)):
-    for i in p:
-        assert i >= 0
-    if not byCol_not_byRow:
-        M = zip(*M)
-        p = p[::-1]
-    for x in range(len(M)):
-        for y in range(len(M[x])):
-            s.write(p[0] + x, p[1] + y, M[x][y])
-
-
-def __readBook(book_path, sheet_index=0, xrng=(0, -1), yrng=(0, -1)):
-    book = xlrd.open_workbook(book_path)
-    try:
-        sheet = book.sheet_by_index(sheet_index)
-    except TypeError:
-        sheet = book.sheet_by_name(sheet_index)
-    return __pullSheet(sheet, xrng, yrng)
-
-
-def __writeBook(M, book_path, sheet_name='xlmp', p=(0, 0)):
-    book = xlwt.Workbook()
-    sheet = book.add_sheet(sheet_name)
-    __writeSheet(M, sheet, p)
-
-
-###############################################################################
-#
-# Optional/User-Conveinece Interperters
-#  Removes zero offsets allow Excel Column names
-#
-###############################################################################
-
-
-##
-# Converts all of the keys that are strings to
-# integers, assuming that strings are xl colnames.
-# unnecessary function only for client side conviencence.
-def __ReplaceColNames(D):
-    for k in list(D.keys()):
-        if isinstance(k, str):
-            place = 1
-            index = 0
-            for c in reversed(k):
-                index += place * (int(c, 36) - 9)
-                place *= 26
-            index -= 1
-        if k != index:
-            D[index] = D.pop(k)
-
-'''
-def __ReplaceZeroOffset(D):
-'''
-
-
-###############################################################################
-#
-# Data Mapping
-#
-###############################################################################
-
-
-##
-# M might be a smaller matrix than the range on the sheet
-# it is to print to.  _EG_ if we writing to columns, 0, 1, and 3,
-# then we M is will be of dim (:,3) and needs to become (:,4) with
-# a blank column 2
-def __insertNullCols(M, D):
-    assert len(M) == len(D)
-    B = [[None for y in range(max(D.keys()))] for x in range(len(M[0]))]
-    for m, k in zip(zip(*M), D):
-        B[k] = m
-    return zip(*B)
 
 
 ##
@@ -105,13 +100,13 @@ def __insertNullCols(M, D):
 # unless f is a string then it returns f
 # or if f is an int then it returns r[f]
 # Need a better structure for handeling functions
-def __evalMapCmd(f, r):
+def evaluate(f, r):
     if isinstance(f, str):
         return f
     elif isinstance(f, int):
         return r[f]  # if zeroOffset else r[f-1] // that should be done before
     else:  # this looks like horrible recursion
-        return f[0](*[__evalMapCmd(a, r) for a in f[1]])
+        return f[0](*[evaluate(a, r) for a in f[1]])
 
 
 ##
@@ -119,8 +114,14 @@ def __evalMapCmd(f, r):
 # where F_j(M_i) = B[i][j]
 # default is by cols of F and rows of M
 # M must be transposed beforehand for other method
-def __mMap(M, F):
-    return __insertNullCols([[__evalMapCmd(f, m) for f in F] for m in M], F)
+def mapOperate(M, D):
+    X = list(range(max(D.keys())))
+    Y = list(range(len(M[0])))
+    B = [[None for i in X] for j in Y]
+    for i, r in zip(X, M):
+        for k in zip(D):
+            B[i][k] = evaluate(D[k], r)
+    return B
 
 
 ###############################################################################
@@ -130,20 +131,19 @@ def __mMap(M, F):
 ###############################################################################
 
 
-##
-# Maps from fBook to tBook according to Cmd
-def xlmap(Cmd, fBook='', tBook='', fSheet=0, tSheet='xlmp',
-          mapX=byCol_not_byRow, frng=(0, -1), tp=(0, 0)):
-    global byCol_not_byRow
-    byCol_not_byRow = mapX
-    if mapX:
-        __ReplaceColNames(Cmd)
-    try:
-        M = __pullSheet(fSheet, frng)
-    except AttributeError:
-        M = __readBook(fBook, fSheet, frng)
-    M = __mMap(M, [Cmd[k] for k in Cmd])
-    try:
-        __writeSheet(M, tSheet, tp)
-    except AttributeError:
-        __writeBook(M, tBook, tSheet, tp)
+def xlmp(cmd, mapByCol=True, fBook='', tBook='', fSheet=0, tSheet='xlmp',
+         fCrng=(0, -1), fRrng=(0, -1), tr0=0, tc0=0):
+    xlrw = ixl(readByRow=mapByCol)
+    M = xlrw.guessRead(fBook, fSheet, fCrng, fRrng)
+    M = mapOperate(M, cmd)
+    xlrw.guessWrite(M, tBook, tSheet, tr0, tc0)
+
+
+def genSubSheetsByIds(M, idLocs):
+    idFunc = lambda x: [x[d] for d in idLocs]
+    M.sort(key=idFunc)
+    return [list(m) for k, m in groupby(M, idFunc)]
+
+
+def xlSubMapping(subCmd, subSheets):
+    pass
