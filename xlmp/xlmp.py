@@ -2,7 +2,6 @@ import xlrd
 import xlwt
 from itertools import groupby
 
-
 ##
 # XLRD XLWT Interfaces
 class ixl(object):
