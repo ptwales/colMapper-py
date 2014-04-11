@@ -16,7 +16,7 @@ class ixl(object):
     # creates matrix of values of xlrd.Sheet object
     def pullSheet(self, s, cRng=(0, -1), rRng=(0, -1)):
         assert not s.ragged_rows
-        rRng = list(*rRng)
+        rRng = list(rRng)
         if rRng[1] < 0:
             rRng[1] += s.nrows
         M = [s.row_values(r, *cRng) for r in range(*rRng)]
@@ -61,16 +61,20 @@ class ixl(object):
 
 class mpCmd(dict):
 
-    def __init__(self, zeroOffset, *args):
-        self._zOff = 0 if zeroOffset else 1
-        dict.__init__(*args)
+    def __init__(self, zeroOffset, d):
+        self._zOff = zeroOffset
+#        super(mpCmd, self).__init__(*args)
+        # DO NOT LIKE
+        for k in d.keys():
+            self[k] = d[k]
+
 
     def __setitem__(self, key, val):
         if isinstance(key, str):
-            key = self.__replaceColName(key)
+            key = self.__ReplaceColName(key)
         else:
             key += self._zOff
-        dict.__setitem__(self, key, val)
+        super(mpCmd, self).__setitem__(key, val)
 
     ##
     # Converts all of the keys that are strings to
@@ -80,7 +84,7 @@ class mpCmd(dict):
         place = 1
         index = 0
         for c in reversed(k):
-            index += place * (int(c, 36) - 9)
+            index += place * (int(c.upper(), 36) - 9)
             place *= 26
         index -= 1
         return index
@@ -114,11 +118,14 @@ def evaluate(f, r):
 # default is by cols of F and rows of M
 # M must be transposed beforehand for other method
 def mapOperate(M, D):
-    X = list(range(max(D.keys())))
+    X = list(range(max(D.keys()) + 1))
     Y = list(range(len(M[0])))
+    print(X, Y)
     B = [[None for i in X] for j in Y]
     for i, r in zip(X, M):
-        for k in zip(D):
+        print(i, r)
+        for k in D.keys():
+            print(k)
             B[i][k] = evaluate(D[k], r)
     return B
 
