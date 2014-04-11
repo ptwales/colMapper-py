@@ -6,3 +6,5 @@
 # You may obtain a copy of the License at:
  
 # http://www.gnu.org/licenses/licenses.html
+
+from xlmp import *
