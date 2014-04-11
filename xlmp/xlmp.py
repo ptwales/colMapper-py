@@ -2,6 +2,8 @@ import xlrd
 import xlwt
 from itertools import groupby
 
+__all__ = ['xlmp', 'mpCmd', 'groupByIds', 'xlSmp']
+
 ##
 # XLRD XLWT Interfaces
 class ixl(object):
@@ -61,19 +63,17 @@ class ixl(object):
 
 class mpCmd(dict):
 
-    def __init__(self, zeroOffset, d):
-        self._zOff = zeroOffset
-#        super(mpCmd, self).__init__(*args)
-        # DO NOT LIKE
-        for k in d.keys():
-            self[k] = d[k]
+    def __init__(self, offset, cmd):
+        self._Off = offset
+        for k in cmd.keys():  # call __setitem__ and don't redefine
+            self[k] = cmd[k]
 
 
     def __setitem__(self, key, val):
         if isinstance(key, str):
             key = self.__ReplaceColName(key)
         else:
-            key += self._zOff
+            key += self._Off
         super(mpCmd, self).__setitem__(key, val)
 
     ##
@@ -145,11 +145,11 @@ def xlmp(cmd, mapByCol=True, fBook='', tBook='', fSheet=0, tSheet='xlmp',
     xlrw.guessWrite(M, tBook, tSheet, tr0, tc0)
 
 
-def genSubSheetsByIds(M, idLocs):
+def groupByIds(M, idLocs):
     idFunc = lambda x: [x[d] for d in idLocs]
     M.sort(key=idFunc)
     return [list(m) for k, m in groupby(M, idFunc)]
 
 
-def xlSubMapping(subCmd, subSheets):
+def xlSmp(subCmd, subSheets):
     pass
