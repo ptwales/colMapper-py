@@ -1,13 +1,24 @@
 xlmp
 ============
 
-Whoa! I'm overhauling the internals right now.
-Get back to you on how it works, later.
+xlmp provides mapping controls for Office Spreadsheet applications (MS Excel, LibreOffice-Calc, etc).
+It can do row mapping, column mapping, and sub-mapping.
+Mapping is based on a similar procedures as matrix multiplication meaning xlmp maps by either columns or rows at a time.  
+This means that the number of rows or columns in equal the number of rows or columns out if you map by columns or rows, respectively.
+With the exception of sub-mapping, where xlmp partitions the data set along one axis and then maps each sub-set along the other axis.
 
-colMapper provides column mapping controls for Office Spreadsheet applications (MS Excel, LibreOffice-Calc, etc).
-This name is misleading now because it can do row mapping, column mapping, and (eventually) sub-mapping.
-Therefore, this will be later renamed.
-Maybe to `xlmp`, but I don't want to imply association with anyone working on `xlrd`, `xlwt` or `xlutils`.
+## Usage
+
+Mapping is done by defining an `xlmp.mpCmd`,
+
+```
+>>> myMapCommand = xlmp.mpCmd(zeroOffSet=0, {'A': 0})
+
+```
+This particular command would just map column `A` to column `A` and passing it to the xlmp function,
+```
+>>> xlmp.xlmp(myMapCommand, fBook="fromBook.xls", tBook="output.xls")
+```
 
 ## Dependencies
 
