@@ -11,8 +11,10 @@ class ixl(object):
     def __init__(self, readByRow=False):
         self.byRow = readByRow
 
+
     def __transpose(self, M):
         return M if self.byRow else list(zip(*M))
+
 
     ##
     # creates matrix of values of xlrd.Sheet object
@@ -24,6 +26,7 @@ class ixl(object):
         M = [s.row_values(r, *cRng) for r in range(*rRng)]
         return self.__transpose(M)
 
+
     def readBook(self, book_path, sheet_i=0, *args):
         book = xlrd.open_workbook(book_path)
         try:
@@ -31,6 +34,7 @@ class ixl(object):
         except TypeError:
             sheet = book.sheet_by_name(sheet_i)
         return self.pullSheet(sheet, *args)
+
 
     def guessRead(self, book, sheet, *args):
         try:
@@ -48,11 +52,13 @@ class ixl(object):
             for c in range(len(M[r])):
                 s.write(r0 + r, c0 + c, M[r][c])
 
+
     def writeBook(self, M, book_path, sheet_name='xlmp', c0=0, r0=0):
         book = xlwt.Workbook()
         sheet = book.add_sheet(sheet_name)
         self.writeSheet(M, sheet, c0, r0)
         book.save(book_path)
+
 
     def guessWrite(self, M, book, sheet, *args):
         try:
@@ -62,6 +68,7 @@ class ixl(object):
 
 
 class mpCmd(dict):
+
 
     def __init__(self, offset, cmd):
         self._Off = offset
@@ -75,6 +82,7 @@ class mpCmd(dict):
         else:
             key += self._Off
         super(mpCmd, self).__setitem__(key, val)
+
 
     ##
     # Converts all of the keys that are strings to
@@ -90,58 +98,42 @@ class mpCmd(dict):
         return index
 
 
-###############################################################################
-#
-# Data Mapping - Maybe merge into mpCmd
-#
-###############################################################################
+    ##
+    # Source of my woes
+    # returns $f(\vec{r})$
+    # unless f is a string then it returns f
+    # or if f is an int then it returns r[f]
+    # Need a better structure for handeling functions
+    def evaluate(self, f, r):
+        if isinstance(f, str):
+            return f
+        elif isinstance(f, int):
+            return r[f]  # if zeroOffset else r[f-1] // that should be done before
+        else:  # this looks like horrible recursion
+            return f[0](*[evaluate(a, r) for a in f[1]])
 
 
-##
-# Source of my woes
-# returns $f(\vec{r})$
-# unless f is a string then it returns f
-# or if f is an int then it returns r[f]
-# Need a better structure for handeling functions
-def evaluate(f, r):
-    if isinstance(f, str):
-        return f
-    elif isinstance(f, int):
-        return r[f]  # if zeroOffset else r[f-1] // that should be done before
-    else:  # this looks like horrible recursion
-        return f[0](*[evaluate(a, r) for a in f[1]])
+    ##
+    # performs [M].[F] = B
+    # where F_j(M_i) = B[i][j]
+    # default is by cols of F and rows of M
+    # M must be transposed beforehand for other method
+    def operate(self, M):
+        X = list(range(max(self.keys()) + 1))
+        Y = list(range(len(M[0])))
+        B = [[None for i in X] for j in Y]
+        for i, r in zip(X, M):
+            for k in self.keys():
+                B[i][k] = self.evaluate(self[k], r)
+        return B
 
-
-##
-# performs [M].[F] = B
-# where F_j(M_i) = B[i][j]
-# default is by cols of F and rows of M
-# M must be transposed beforehand for other method
-def mapOperate(M, D):
-    X = list(range(max(D.keys()) + 1))
-    Y = list(range(len(M[0])))
-    print(X, Y)
-    B = [[None for i in X] for j in Y]
-    for i, r in zip(X, M):
-        print(i, r)
-        for k in D.keys():
-            print(k)
-            B[i][k] = evaluate(D[k], r)
-    return B
-
-
-###############################################################################
-#
-# User Accessable Functions
-#
-###############################################################################
 
 
 def xlmp(cmd, mapByCol=True, fBook='', tBook='', fSheet=0, tSheet='xlmp',
          fCrng=(0, -1), fRrng=(0, -1), tr0=0, tc0=0):
     xlrw = ixl(readByRow=mapByCol)
     M = xlrw.guessRead(fBook, fSheet, fCrng, fRrng)
-    M = mapOperate(M, cmd)
+    M = cmd.operate(M)
     xlrw.guessWrite(M, tBook, tSheet, tr0, tc0)
 
 
