@@ -20,6 +20,24 @@ This particular command would just map column `A` to column `A` and passing it t
 >>> xlmp.xlmp(myMapCommand, fBook="fromBook.xls", tBook="output.xls")
 ```
 
+## Methodology
+
+xlmp treats ranges of spread-sheets as matricies without regarding the data type of any cell.
+All values of the specified origin range are read as rectangular list of lists through an interface to `xlrd` and `xlwt`.
+xlmp performs the matrix operation,
+
+```
+$ \mathbb{B} = \mathbb{M} \cdot \mathbb{G} $
+```
+Where **M** is the original dataset and **B** is the desired output dataset.
+**G** is a column vector of functions which accept a vector and returns a scalar.
+This is where xlmp differs from normal _(def?)_ matrix multiplication.
+Instead of element `b_{i,j}` equaling the dot product of row vector `\vec{m}_i` and `\vec{g}_j`, elements of **B** are defined as,
+
+```
+$ b_{i,j} = g_j \left(\vec{m}_i\right) $
+```
+
 ## Dependencies
 
 - Python [xlrd module](https://github.com/python-excel/xlrd)
