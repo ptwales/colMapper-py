@@ -108,7 +108,7 @@ class mpCmd(dict):
         if isinstance(f, str):
             return f
         elif isinstance(f, int):
-            return r[f]  # if zeroOffset else r[f-1] // that should be done before
+            return r[f - self._Off]
         else:  # this looks like horrible recursion
             return f[0](*[evaluate(a, r) for a in f[1]])
 
