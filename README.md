@@ -11,12 +11,13 @@ With the exception of sub-mapping, where xlmp partitions the data set along one 
 
 Mapping is done by defining an `xlmp.mpCmd`,
 
-```
+```python
 >>> myMapCommand = xlmp.mpCmd(zeroOffSet=0, {'A': 0})
+```
 
-```
-This particular command would just map column `A` to column `A` and passing it to the xlmp function,
-```
+This particular command would just map column _A_ to column _A_ and passing it to the xlmp function,
+
+```python
 >>> xlmp.xlmp(myMapCommand, fBook="fromBook.xls", tBook="output.xls")
 ```
 
@@ -26,17 +27,14 @@ xlmp treats ranges of spread-sheets as matricies without regarding the data type
 All values of the specified origin range are read as rectangular list of lists through an interface to `xlrd` and `xlwt`.
 xlmp performs the matrix operation,
 
-```
-$ \mathbb{B} = \mathbb{M} \cdot \mathbb{G} $
-```
+![alt text](http://www.codecogs.com/eqnedit.php?latex=\textbf{B}&space;=&space;\textbf{M}&space;\cdot&space;\textbf{G})
+
 Where **M** is the original dataset and **B** is the desired output dataset.
 **G** is a column vector of functions which accept a vector and returns a scalar.
 This is where xlmp differs from normal _(def?)_ matrix multiplication.
 Instead of element `b_{i,j}` equaling the dot product of row vector `\vec{m}_i` and `\vec{g}_j`, elements of **B** are defined as,
 
-```
-$ b_{i,j} = g_j \left(\vec{m}_i\right) $
-```
+![alt text](http://www.codecogs.com/eqnedit.php?latex=b_{i,j}&space;=&space;g_j&space;\left(\vec{m}_i\right))
 
 ## Dependencies
 
