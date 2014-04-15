@@ -1,5 +1,5 @@
 xlmp
-============
+====
 
 xlmp provides mapping controls for Office Spreadsheet applications (MS Excel, LibreOffice-Calc, etc).
 It can do row mapping, column mapping, and sub-mapping.
@@ -9,32 +9,99 @@ With the exception of sub-mapping, where xlmp partitions the data set along one 
 
 ## Usage
 
-Mapping is done by defining an `xlmp.mpCmd`,
+Mapping is done by defining an _xlmp.mpCmd_ object,
 
 ```python
->>> myMapCommand = xlmp.mpCmd(zeroOffSet=0, {'A': 0})
+>>> import xlmp
+>>> mapCommand = xlmp.mpCmd({'A': 0})
 ```
 
-This particular command would just map column _A_ to column _A_ and passing it to the xlmp function,
+and passing it to the xlmp function,
 
 ```python
->>> xlmp.xlmp(myMapCommand, fBook="fromBook.xls", tBook="output.xls")
+>>> xlmp.xlmp(mapCommand, fBook="fromBook.xls", tBook="output.xls")
 ```
+
+would result in a file _output.xls_ which would only contain to column 'A' of _fromBook.xls_ in column 'A'.
+
+### xlmp.mpCmd
+
+A simple map that reorders the a sheet would look like,
+
+```python
+>>> mapCommand = xlmp.mpCmd({'A': 2, 2: 1, 'C': 4, 'e': 5}, offset=1)
+```
+
+Will map column 'A' &rarr; 'B', 'B' &rarr; 'A', 'C' &rarr; 'D', and 'E' &rarr; 'E'.
+The row count does not change and no values copied are altered.
+Note that column names are case insensitive and can be used for origins but not _yet_ for destinations.
+Furthermore, the optional `offset` parameter can be set to control the offset of indexes but not names.
+'A' &#x2194; 'A' regardless of `offset`.
+
+To reorder rows instead of columns, set the optional arguement `byCol=False` when performing the map,
+
+```python
+>>> xlmp.xlmp(mapCommand, byCol=False, fBook="fromBook.xls", tBook="output.xls")
+```
+
+A map using column names can still be used for row mapping; 'A' &rarr; row 1, 'AA' &rarr; row 27, etc.
+
+#### Functions
 
 ## Methodology
 
 xlmp treats ranges of spread-sheets as matricies without regarding the data type of any cell.
-All values of the specified origin range are read as rectangular list of lists through an interface to `xlrd` and `xlwt`.
+All values of the specified origin range are read as rectangular list of lists through an interface to xlrd and xlwt.
 xlmp performs the matrix operation,
 
-<a class="centerimage" href="http://www.codecogs.com/eqnedit.php?latex=\LARGE&space;\textbf{B}=\textbf{M}\cdot\textbf{G}" target="_blank"><img src="http://latex.codecogs.com/gif.latex?\LARGE&space;\textbf{B}=\textbf{M}\cdot\textbf{G}" title="\large \textbf{B}=\textbf{M}\cdot\textbf{G}" /></a>
+<span class="align-center">
+  <a href="http://www.codecogs.com/eqnedit.php?latex=\textbf{B}=\textbf{M}\cdot\vec{G}"target="_blank">
+    <img src="http://latex.codecogs.com/gif.latex?\textbf{B}=\textbf{M}\cdot\vec{G}"title="\textbf{B}=\textbf{M}\cdot\vec{G}"/>
+  </a>
+</span>
 
-Where **M** is the original dataset and **B** is the desired output dataset.
-**G** is a column vector of functions which accept a vector and returns a scalar.
+to the dataset, where **M** is the original dataset and **B** is the desired output dataset.
+The output is written to a file through the same interface.
+
+_&#x20d7;G_ is a column vector of functions which accept a vector and returns a scalar.
 This is where xlmp differs from normal _(def?)_ matrix multiplication.
-Instead of element _b[i,j]_ equaling the dot product of row vector _m[i]_ and _g[j]_, elements of **B** are defined as,
+Instead of element _b<sub>i,j</sub>_ equaling the dot product of row vector _m<sub>i</sub>_ and _g<sub>j</sub>_, elements of **B** are defined as,
 
-<a class="centerimage" href="http://www.codecogs.com/eqnedit.php?latex=\LARGE&space;b_{i,j}=g_j\left(m_i\right)" target="_blank"><img src="http://latex.codecogs.com/gif.latex?\LARGE&space;b_{i,j}=g_j\left(m_i\right)" title="\LARGE b_{i,j}=g_j\left(m_i\right)" /></a>
+<span class="align-center">
+  <a href="http://www.codecogs.com/eqnedit.php?latex=b_{i,j}=g_j\left(m_i\right)" target="_blank">
+    <img src="http://latex.codecogs.com/gif.latex?b_{i,j}=g_j\left(m_i\right)" title=" b_{i,j}=g_j\left(m_i\right)"/>
+  </a>
+</span>
+
+<!--
+### Map Commands
+
+In practice, not all of elements of _m<sub>i</sub>_ would be needed by _g<sub>j</sub>_.
+Constraining the user to map with only function that accept iterables is unnecessary.
+-->
+
+### Transposition
+
+Note the constraint that **B** must have the row count as **M**.
+This can be circumvented by performing the operation,
+
+<!-- LMAO if this works -->
+```LaTeX
+\textbf{B}=\vec{G}\cdot\textbf{M}
+```
+
+constraining the column count instead.
+In the code, xlmp does that operation as,
+
+<!-- LMAO if this works -->
+```LaTeX
+\textbf{B}^{T}=\textbf{M}^{T}\vec{G}^{T}
+```
+
+by reading M and writing B transposed through the xlrd-xlwt interface.
+_&#x20d7;G_ does not need to be transposed in practice as it is just a dictionary of functions.
+
+### Sub Mapping
 
 ## Dependencies
 
