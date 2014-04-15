@@ -32,7 +32,7 @@ xlmp performs the matrix operation,
 Where **M** is the original dataset and **B** is the desired output dataset.
 **G** is a column vector of functions which accept a vector and returns a scalar.
 This is where xlmp differs from normal _(def?)_ matrix multiplication.
-Instead of element `b_{i,j}` equaling the dot product of row vector `\vec{m}_i` and `\vec{g}_j`, elements of **B** are defined as,
+Instead of element _b[i,j]_ equaling the dot product of row vector _m[i]_ and _g[j]_, elements of **B** are defined as,
 
 <a class="centerimage" href="http://www.codecogs.com/eqnedit.php?latex=\LARGE&space;b_{i,j}=g_j\left(m_i\right)" target="_blank"><img src="http://latex.codecogs.com/gif.latex?\LARGE&space;b_{i,j}=g_j\left(m_i\right)" title="\LARGE b_{i,j}=g_j\left(m_i\right)" /></a>
 
@@ -52,9 +52,4 @@ Instead of element `b_{i,j}` equaling the dot product of row vector `\vec{m}_i` 
  
  http://www.gnu.org/licenses/licenses.html
 
-.centerimage {
- margin-left:auto;
- margin-right:auto;
- width:70%;
-}
     
