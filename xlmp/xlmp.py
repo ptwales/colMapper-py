@@ -70,7 +70,7 @@ class ixl(object):
 class mpCmd(dict):
 
 
-    def __init__(self, offset, cmd):
+    def __init__(self, cmd, offset=0):
         self._Off = offset
         for k in cmd.keys():  # call __setitem__ and don't redefine
             self[k] = cmd[k]
