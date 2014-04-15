@@ -27,16 +27,14 @@ xlmp treats ranges of spread-sheets as matricies without regarding the data type
 All values of the specified origin range are read as rectangular list of lists through an interface to `xlrd` and `xlwt`.
 xlmp performs the matrix operation,
 
-![alt text](http://latex.codecogs.com/gif.latex?\textbf{B}=\textbf{M}\cdot\textbf{G})
+<a href="http://www.codecogs.com/eqnedit.php?latex=\LARGE&space;\textbf{B}=\textbf{M}\cdot\textbf{G}" target="_blank"><img src="http://latex.codecogs.com/gif.latex?\LARGE&space;\textbf{B}=\textbf{M}\cdot\textbf{G}" title="\large \textbf{B}=\textbf{M}\cdot\textbf{G}" /></a>
 
 Where **M** is the original dataset and **B** is the desired output dataset.
 **G** is a column vector of functions which accept a vector and returns a scalar.
 This is where xlmp differs from normal _(def?)_ matrix multiplication.
 Instead of element `b_{i,j}` equaling the dot product of row vector `\vec{m}_i` and `\vec{g}_j`, elements of **B** are defined as,
 
-![alt text](http://latex.codecogs.com/gif.latex?b_{i,j}&space;=&space;g_j&space;\left(\vec{m}_i\right))
-
-<a href="http://www.codecogs.com/eqnedit.php?latex=\textbf{B}=\textbf{M}\cdot\textbf{G}" target="_blank"><img src="http://latex.codecogs.com/gif.latex?\textbf{B}=\textbf{M}\cdot\textbf{G}" title="\textbf{B}=\textbf{M}\cdot\textbf{G}" /></a>
+<a href="http://www.codecogs.com/eqnedit.php?latex=\LARGE&space;b_{i,j}=g_j\left(m_i\right)" target="_blank"><img src="http://latex.codecogs.com/gif.latex?\LARGE&space;b_{i,j}=g_j\left(m_i\right)" title="\LARGE b_{i,j}=g_j\left(m_i\right)" /></a>
 
 ## Dependencies
 
