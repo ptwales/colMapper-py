@@ -2,7 +2,7 @@ import xlrd
 import xlwt
 from itertools import groupby
 
-__all__ = ['xlmp', 'mpCmd', 'groupByIds', 'xlSmp']
+__all__ = ['xlmp', 'mpCmd', 'groupByIds']  #, 'xlSmp']
 
 ##
 # XLRD XLWT Interfaces
@@ -130,11 +130,12 @@ class mpCmd(dict):
 
 
 def xlmp(cmd, mapByCol=True, fBook='', tBook='', fSheet=0, tSheet='xlmp',
-         fCrng=(0, -1), fRrng=(0, -1), tr0=0, tc0=0):
+         fCrng=(0, -1), fRrng=(0, -1), tp=(0, 0):
     xlrw = ixl(readByRow=mapByCol)
+    # these could just be stacked in one big overload
     M = xlrw.guessRead(fBook, fSheet, fCrng, fRrng)
-    M = cmd.operate(M)
-    xlrw.guessWrite(M, tBook, tSheet, tr0, tc0)
+    B = cmd.operate(M)
+    xlrw.guessWrite(B, tBook, tSheet, *tp)
 
 
 def groupByIds(M, idLocs):
@@ -143,5 +144,13 @@ def groupByIds(M, idLocs):
     return [list(m) for k, m in groupby(M, idFunc)]
 
 
-def xlSmp(subCmd, subSheets):
+# Still mock up
+def xlSmp(subCmd, grpFnc, grpByCol=True, fBook='', tBook='', fSheet=0, tSheet='xlmp',
+          fCrng=(0, -1), fRrng=(0, -1), tp=(0, 0), **grpFncArgs):
+    xlrw = ixl(readbyRow=grpByCol)
+    M = xlrw.guessRead(fBook, fSheet, fCrng, fRrng)
+    gM = grpFnc(M, grpFncArgs)  # I don't know if this is how to use **kwargs
+    gB = [subCmd.operate(zip(*m)) for m in gM]  # must map along the same dim that as grouped?
+    B = zip(gB)
+    xlrw.guessWrite(B, fBook, tBook, tSheet, *tp)
     pass
