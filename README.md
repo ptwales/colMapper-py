@@ -26,6 +26,8 @@ would result in a file _output.xls_ which would only contain to column 'A' of _f
 
 ### xlmp.mpCmd
 
+#### Indexes
+
 A simple map that reorders the a sheet would look like,
 
 ```python
@@ -48,6 +50,14 @@ A map using column names can still be used for row mapping; 'A' &rarr; row 1, 'A
 
 #### Functions
 
+To map a new value as a function of other values, pass a function and a list of indexes instead of just an index.
+The list of indexes will specify values of which cells on that row or column to pass to that function.
+
+```python
+>>> mapCommand = xlmp.mpCmd({'A': (Sum, [0, 3, 4])})
+```
+will map 'A' = Sum('A','D','E'), ergo 'A1' = Sum('A1', 'D1', 'E1'), if mapping by columns.
+
 ## Methodology
 
 xlmp treats ranges of spread-sheets as matricies without regarding the data type of any cell.
@@ -63,7 +73,8 @@ xlmp performs the matrix operation,
 to the dataset, where **M** is the original dataset and **B** is the desired output dataset.
 The output is written to a file through the same interface.
 
-_&#x20d7;G_ is a column vector of functions which accept a vector and returns a scalar.
+_G_<span style="position: relative;bottom: 1.3ex;letter-spacing: -1.2ex;right: 1.2ex">_&#x20d7;_</span>
+is a column vector of functions which accept a vector and returns a scalar.
 This is where xlmp differs from normal _(def?)_ matrix multiplication.
 Instead of element _b<sub>i,j</sub>_ equaling the dot product of row vector _m<sub>i</sub>_ and _g<sub>j</sub>_, elements of **B** are defined as,
 
