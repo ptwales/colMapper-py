@@ -7,7 +7,7 @@ __all__ = ['xlmp', 'mpCmd', 'groupByIds']  #, 'xlSmp']
 ##
 # XLRD XLWT Interfaces
 class ixl(object):
-
+    """xlmp's interface to the xlrd and xlwt modules."""
     def __init__(self, readByRow=False):
         self.byRow = readByRow
 
@@ -79,8 +79,10 @@ class mpCmd(dict):
     def __setitem__(self, key, val):
         if isinstance(key, str):
             key = self.__ReplaceColName(key)
-        else:
+        elif isinstance(key, int):
             key += self._Off
+        else:
+            raise TypeError
         super(mpCmd, self).__setitem__(key, val)
 
 
@@ -88,30 +90,30 @@ class mpCmd(dict):
     # Converts all of the keys that are strings to
     # integers, assuming that strings are xl colnames.
     # unnecessary function only for client side conviencence.
-    def __ReplaceColName(self, k):
+    def __ReplaceColName(self, key):
         place = 1
         index = 0
-        for c in reversed(k):
+        for c in reversed(key):
             index += place * (int(c.upper(), 36) - 9)
             place *= 26
         index -= 1
         return index
-
-
+        
+        
     ##
     # Source of my woes
     # returns $f(\vec{r})$
     # unless f is a string then it returns f
     # or if f is an int then it returns r[f]
     # Need a better structure for handeling functions
-    def evaluate(self, f, r):
-        if isinstance(f, str):
-            return f
-        elif isinstance(f, int):
-            return r[f - self._Off]
+    def evaluate(self, var, row):
+        if isinstance(var, str):
+            return var
+        elif isinstance(var, int):
+            return row[var - self._Off]
         else:  # this looks like horrible recursion
-            return f[0](*[evaluate(a, r) for a in f[1]])
-
+            return var[0](*[evaluate(v, row) for v in var[1]])
+            
 
     ##
     # performs [M].[F] = B
@@ -136,12 +138,16 @@ def xlmp(cmd, mapByCol=True, fBook='', tBook='', fSheet=0, tSheet='xlmp',
     M = xlrw.guessRead(fBook, fSheet, fCrng, fRrng)
     B = cmd.operate(M)
     xlrw.guessWrite(B, tBook, tSheet, *tp)
+    '''
+    xlrw.guessWrite(cmd.operate(xlrw.guessRead(fBook, fSheet, fCrng, fRrng)),
+                    tBook, tSheet, *tp)
+    '''
 
 
 def groupByIds(M, idLocs):
     idFunc = lambda x: [x[d] for d in idLocs]
     M.sort(key=idFunc)
-    return [list(m) for k, m in groupby(M, idFunc)]
+    return [list(g) for k, g in groupby(M, idFunc)]
 
 
 # Still mock up
@@ -152,5 +158,10 @@ def xlSmp(subCmd, grpFnc, grpByCol=True, fBook='', tBook='', fSheet=0, tSheet='x
     gM = grpFnc(M, grpFncArgs)  # I don't know if this is how to use **kwargs
     gB = [subCmd.operate(zip(*m)) for m in gM]  # must map along the same dim that as grouped?
     B = zip(gB)
-    xlrw.guessWrite(B, fBook, tBook, tSheet, *tp)
-    pass
+    xlrw.guessWrite(B, tBook, tSheet, *tp)
+    '''
+    xlrw.guessWrite(zip(
+                    [subCmd.operate(zip(*m)) for m in 
+                    grpFng(xlrw.guessRead(fBook, fSheet, fCrng, fRrng))]
+                    ), tBook, tSheetm *tp)
+    '''
