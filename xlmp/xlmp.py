@@ -2,95 +2,171 @@ import xlrd
 import xlwt
 from itertools import groupby
 
-__all__ = ['xlmp', 'mpCmd', 'groupByIds']  #, 'xlSmp']
+__all__ = ['xlmp', 'mpCmd', 'group_by_ids']  #, 'xlSmp']
 
-##
-# XLRD XLWT Interfaces
-class ixl(object):
-    """xlmp's interface to the xlrd and xlwt modules."""
-    def __init__(self, readByRow=False):
-        self.byRow = readByRow
 
+class Ixl(object):
+    """xlmp's interface to the xlrd and xlwt modules.
+    
+    Ixl reads a rectangular list from a sheet or write one
+    to the sheet.  It also transposes the list in reading
+    and writing if by_row = False.
+    Sheets read must not have ragged rows.
+    
+    Attributes: 
+        by_row: Boolean whether sub-lists are rows (T) or columns (F).
+        Checked at reading and writing of datasets.  If False, datasets
+        are transposed when read and written.  This way xlmp and mpCmd
+        can ignore transposition.
+    """
+    
+    def __init__(self, read_by_row=True):
+        """
+        Initilizes the Ixl object with boolean by_row of whether sub-lists
+        should be rows or columns of read sheets.
+        
+        Args:
+            read_by_row: If true sub-lists are rows else columns
+        """
+        self.by_row = read_by_row
 
     def __transpose(self, M):
-        return M if self.byRow else list(zip(*M))
+        """Transposes M if reading by column.
+        
+        Private method to transpose datasets, if sub-lists
+        correspond to columns and not rows, before reading
+        or writing.
+        
+        Args:
+            M: data set to transpose.  Should be a rectangular
+            2D list.
+        
+        Returns:
+            M if if reading by row else it return the transpose of M
+        """
+        return M if self.by_row else list(zip(*M))
 
-
-    ##
-    # creates matrix of values of xlrd.Sheet object
-    def pullSheet(self, s, cRng=(0, -1), rRng=(0, -1)):
-        assert not s.ragged_rows
-        rRng = list(rRng)
-        if rRng[1] < 0:
-            rRng[1] += s.nrows
-        M = [s.row_values(r, *cRng) for r in range(*rRng)]
+    def read_sheet(self, sheet, c0=0, cf=-1, r0=0, rf=-1):
+        """Reads a rectangular list from sheet.
+        
+        Reads the cell values of sheet in column range [c0, cf]
+        and row range [r0, rf] and returns the dataset as as a
+        rectangular list.
+        
+        Args:
+            sheet: The xlrd.book.sheet object that is read.
+            c0, cf: inclusive column range to read from sheet.
+            r0, rf: the inclusive row range to read from sheet.
+        
+        Returns:
+            A rectangular list of the cell values in the range 
+            ([c0, cf], [r0, rf]) of sheet.  Sub lists will be the rows
+            if self.by_row is true, else they will be the columns.
+        """
+        # TODO: Raise an error instead. Research which error to raise 
+        assert not sheet.ragged_rows
+        if rf < 0:
+            rf += sheet.nrows
+        # xlrd loops cf for us.
+        M = [s.row_values(r, c0, cf) for r in range(r0, rf)]
         return self.__transpose(M)
 
-
-    def readBook(self, book_path, sheet_i=0, *args):
+    def read_book(self, book_path, sheet_i=0, *args):
+        """Opens book_path and reads dataset from sheet_i.
+        
+        Reads the file at book_path and gets sheet_i of it.
+        sheet_i may be a index or a name of the sheet in the book to read.
+        
+        Args:
+            book_path: The path to the workbook file to read.
+            sheet_i: The zero-offset index or name of the sheet
+            of the book to read.
+            *args: additional arguments to pass to read_sheet.
+        
+        Returns: 
+            Rectangular list of cell values of the sheet_i sheet of
+            the book at book_path within the ranges passed in *args.
+        """
         book = xlrd.open_workbook(book_path)
         try:
             sheet = book.sheet_by_index(sheet_i)
         except TypeError:
             sheet = book.sheet_by_name(sheet_i)
-        return self.pullSheet(sheet, *args)
+        return self.read_sheet(sheet, *args)
 
-
-    def guessRead(self, book, sheet, *args):
+    def guess_read(self, sheet, book_path='', *args):
+        """Reads a dataset from sheet or book_path
+        
+        Trys to read sheet as an xlrd.book.sheet object with
+        read_sheet.  If sheet is not that object then it will
+        read the book with read_book.  This function and guess_write
+        should only be used in user interfaces so that users may
+        open their own xlrd.book.sheet objects and pass them quickly
+        to xlmp.  Users cannot pass xlrd.book objects because they
+        are expected to open the sheet objects.
+        
+        Args:
+            sheet: Either xlrd.book.sheet object to read or a sheet 
+            index or name of an sheet object in the book 
+            at book_path.
+            book_path: Path to a workbook file. Optionally, ignored 
+            if sheet is an xlrd.book.sheet object.
+            *args: The additional arguements passed to either 
+            read_sheet or read_book.
+        """
         try:
-            M = self.readSheet(sheet, *args)
+            M = self.read_sheet(sheet, *args)
         except AttributeError:
-            M = self.readBook(book, sheet, *args)
+            M = self.read_book(sheet, book_path, *args)
         return M
 
-    ##
-    # writes maxtrix M to xlwt.Sheet object
-    # offset by r0 and c0
-    def writeSheet(self, M, s, c0=0, r0=0):
+    def write_sheet(self, M, sheet, c0=0, r0=0):
+        """Writes dataset M to sheet starting at (c0, r0)
+        """
         M = self.__transpose(M)
         for r in range(len(M)):
             for c in range(len(M[r])):
-                s.write(r0 + r, c0 + c, M[r][c])
+                sheet.write(r0 + r, c0 + c, M[r][c])
 
-
-    def writeBook(self, M, book_path, sheet_name='xlmp', c0=0, r0=0):
+    def write_book(self, M, book_path, sheet_name='xlmp', *args):
+        """Writes dataset M to new workbook file at book_path.
+        """
         book = xlwt.Workbook()
         sheet = book.add_sheet(sheet_name)
-        self.writeSheet(M, sheet, c0, r0)
+        self.write_sheet(M, sheet, *args)
         book.save(book_path)
 
-
-    def guessWrite(self, M, book, sheet, *args):
+    def guess_write(self, M, sheet, book_path='', *args):
+        """Writes dataset M to existing sheet or new workbook file at book_path.
+        """
         try:
-            self.writeSheet(M, sheet, *args)
+            self.write_sheet(M, sheet, *args)
         except AttributeError:
-            self.writeBook(M, book, sheet, *args)
+            self.write_book(M, book_path, sheet, *args)
 
 
 class mpCmd(dict):
 
-
-    def __init__(self, cmd, offset=0):
+    def __init__(self, map_dict, offset=0):
         self._Off = offset
-        for k in cmd.keys():  # call __setitem__ and don't redefine
-            self[k] = cmd[k]
-
+        for k in map_dict.keys():  # call __setitem__; don't redefine
+            self[k] = map_dict[k]
 
     def __setitem__(self, key, val):
         if isinstance(key, str):
-            key = self.__ReplaceColName(key)
+            key = self.__replace_col_name(key)
         elif isinstance(key, int):
-            key += self._Off
+            key += self._Off  # names are not offset
         else:
             raise TypeError
         super(mpCmd, self).__setitem__(key, val)
 
-
+# Still in TOX style documentation
     ##
     # Converts all of the keys that are strings to
     # integers, assuming that strings are xl colnames.
     # unnecessary function only for client side conviencence.
-    def __ReplaceColName(self, key):
+    def __replace_col_name(self, key):
         place = 1
         index = 0
         for c in reversed(key):
@@ -99,7 +175,6 @@ class mpCmd(dict):
         index -= 1
         return index
         
-        
     ##
     # Source of my woes
     # returns $f(\vec{r})$
@@ -107,6 +182,8 @@ class mpCmd(dict):
     # or if f is an int then it returns r[f]
     # Need a better structure for handeling functions
     def evaluate(self, var, row):
+        # TODO: specialize indexes instead of strings and ints
+        # new class def may be needed.
         if isinstance(var, str):
             return var
         elif isinstance(var, int):
@@ -114,7 +191,6 @@ class mpCmd(dict):
         else:  # this looks like horrible recursion
             return var[0](*[evaluate(v, row) for v in var[1]])
             
-
     ##
     # performs [M].[F] = B
     # where F_j(M_i) = B[i][j]
@@ -130,38 +206,39 @@ class mpCmd(dict):
         return B
 
 
-
-def xlmp(cmd, mapByCol=True, fBook='', tBook='', fSheet=0, tSheet='xlmp',
-         fCrng=(0, -1), fRrng=(0, -1), tp=(0, 0):
-    xlrw = ixl(readByRow=mapByCol)
-    # these could just be stacked in one big overload
-    M = xlrw.guessRead(fBook, fSheet, fCrng, fRrng)
+def xlmp(cmd, map_by_col=True, f_book='', t_book='', f_sheet=0, t_sheet='xlmp',
+         fc0=0,  fcf=-1, fr0=0, frf=-1, tr0=0, tc0=0):
+             
+    xlrw = Ixl(read_by_row=map_by_col)
+    M = xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf)
     B = cmd.operate(M)
-    xlrw.guessWrite(B, tBook, tSheet, *tp)
+    xlrw.guess_write(B, t_book, t_sheet, tr0, tc0)
     '''
-    xlrw.guessWrite(cmd.operate(xlrw.guessRead(fBook, fSheet, fCrng, fRrng)),
+    xlrw.guess_write(cmd.operate(xlrw.guess_read(fBook, fSheet, fCrng, fRrng)),
                     tBook, tSheet, *tp)
     '''
 
 
-def groupByIds(M, idLocs):
-    idFunc = lambda x: [x[d] for d in idLocs]
-    M.sort(key=idFunc)
-    return [list(g) for k, g in groupby(M, idFunc)]
+def group_by_ids(M, id_indexes):
+    id_func = lambda x: [x[i] for i in id_indexes]
+    M.sort(key=id_indexes)
+    return [list(g) for k, g in groupby(M, id_func)]
 
 
 # Still mock up
-def xlSmp(subCmd, grpFnc, grpByCol=True, fBook='', tBook='', fSheet=0, tSheet='xlmp',
-          fCrng=(0, -1), fRrng=(0, -1), tp=(0, 0), **grpFncArgs):
-    xlrw = ixl(readbyRow=grpByCol)
-    M = xlrw.guessRead(fBook, fSheet, fCrng, fRrng)
-    gM = grpFnc(M, grpFncArgs)  # I don't know if this is how to use **kwargs
-    gB = [subCmd.operate(zip(*m)) for m in gM]  # must map along the same dim that as grouped?
+def xlsmp(sub_cmd, grp_func, grp_by_col=True, f_book='', t_book='', 
+          f_sheet=0, t_sheet='xlmp', fc0=0, fcf=-1, fr0=0, frf=-1,
+          tr0=0, tc0=0, **grp_kwargs):
+              
+    xlrw = Ixl(read_by_row=grp_by_col)
+    M = xlrw.guess_read(f_book, f_sheet, *f_col_rng, *f_row_rng)
+    gM = grp_func(M, grp_kwargs)  # I don't know if this is how to use **kwargs
+    gB = [sub_cmd.operate(zip(*m)) for m in gM]  # must map along the same dim that as grouped?
     B = zip(gB)
-    xlrw.guessWrite(B, tBook, tSheet, *tp)
+    xlrw.guess_write(B, t_book, t_sheet, *to_point)
     '''
-    xlrw.guessWrite(zip(
+    xlrw.guess_write(zip(
                     [subCmd.operate(zip(*m)) for m in 
-                    grpFng(xlrw.guessRead(fBook, fSheet, fCrng, fRrng))]
+                    grpFng(xlrw.guess_read(fBook, fSheet, fCrng, fRrng))]
                     ), tBook, tSheetm *tp)
     '''
