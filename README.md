@@ -73,7 +73,8 @@ The output is written to a file through the same interface.
 
 The operator G is a column vector of functions which accept a vector and returns a scalar.
 This is where xlmp differs from normal _(def?)_ matrix multiplication.
-Instead of element _b<sub>i,j</sub>_ equaling the dot product of row vector _m<sub>i</sub>_ and _g<sub>j</sub>_, elements of B are defined as, 
+Instead of element _b<sub>i,j</sub>_ equaling the dot product of row vector _m<sub>i</sub>_ and _g<sub>j</sub>_, elements of B are defined as,
+
 <span class="align-center">
   <a href="http://www.codecogs.com/eqnedit.php?latex=b_{i,j}=g_j\left(m_i\right)" target="_blank">
     <img src="http://latex.codecogs.com/gif.latex?b_{i,j}=g_j\left(m_i\right)" title=" b_{i,j}=g_j\left(m_i\right)"/>
