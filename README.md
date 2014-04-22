@@ -122,7 +122,7 @@ Sub Mapping hasn't been tested _at all_ yet.
 
 ## License
  
- Copywrite (C) 2014 Philip Wales
+ Copyright (C) 2014 Philip Wales
 
  This software is licensed under the GNU Lesser General Public License (LGPL), version 3 ("the License").
  See the License for details about distribution rights, and the specific rights regarding derivate works.
