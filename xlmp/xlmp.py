@@ -146,12 +146,14 @@ class Ixl(object):
 
 
 class mpCmd(dict):
-
+    """Stores user defined maps and performs the map operations
+    """
+    
     def __init__(self, map_dict, offset=0):
         self._Off = offset
         for k in map_dict.keys():  # call __setitem__; don't redefine
             self[k] = map_dict[k]
-
+    
     def __setitem__(self, key, val):
         if isinstance(key, str):
             key = self.__replace_col_name(key)
@@ -160,9 +162,8 @@ class mpCmd(dict):
         else:
             raise TypeError
         super(mpCmd, self).__setitem__(key, val)
-
-# Still in TOX style documentation
-    ##
+    
+# Still in ToX style documentation
     # Converts all of the keys that are strings to
     # integers, assuming that strings are xl colnames.
     # unnecessary function only for client side conviencence.
@@ -174,29 +175,28 @@ class mpCmd(dict):
             place *= 26
         index -= 1
         return index
-        
-    ##
-    # Source of my woes
-    # returns $f(\vec{r})$
-    # unless f is a string then it returns f
-    # or if f is an int then it returns r[f]
-    # Need a better structure for handeling functions
-    def evaluate(self, var, row):
-        # TODO: specialize indexes instead of strings and ints
-        # new class def may be needed.
-        if isinstance(var, str):
-            return var
-        elif isinstance(var, int):
-            return row[var - self._Off]
-        else:  # this looks like horrible recursion
-            return var[0](*[evaluate(v, row) for v in var[1]])
-            
-    ##
+    
     # performs [M].[F] = B
     # where F_j(M_i) = B[i][j]
     # default is by cols of F and rows of M
     # M must be transposed beforehand for other method
     def operate(self, M):
+        # Source of my woes
+        # returns $f(\vec{r})$
+        # unless f is a string then it returns f
+        # or if f is an int then it returns r[f]
+        # Need a better structure for handeling functions
+        #
+        # TODO: specialize indexes instead of strings and ints
+        # new class def may be needed.
+        def evaluate(self, var, row):
+            if isinstance(var, str):
+                return var
+            elif isinstance(var, int):
+                return row[var - self._Off]
+            else:  # this looks like horrible recursion
+                return var[0](*[evaluate(v, row) for v in var[1]])
+            
         X = list(range(max(self.keys()) + 1))
         Y = list(range(len(M[0])))
         B = [[None for i in X] for j in Y]
@@ -214,8 +214,8 @@ def xlmp(cmd, map_by_col=True, f_book='', t_book='', f_sheet=0, t_sheet='xlmp',
     B = cmd.operate(M)
     xlrw.guess_write(B, t_book, t_sheet, tr0, tc0)
     '''
-    xlrw.guess_write(cmd.operate(xlrw.guess_read(fBook, fSheet, fCrng, fRrng)),
-                    tBook, tSheet, *tp)
+    xlrw.guess_write(cmd.operate(xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf)),
+                    t_book, t_sheet, tr0, tc0)
     '''
 
 
@@ -231,14 +231,14 @@ def xlsmp(sub_cmd, grp_func, grp_by_col=True, f_book='', t_book='',
           tr0=0, tc0=0, **grp_kwargs):
               
     xlrw = Ixl(read_by_row=grp_by_col)
-    M = xlrw.guess_read(f_book, f_sheet, *f_col_rng, *f_row_rng)
+    M = xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf)
     gM = grp_func(M, grp_kwargs)  # I don't know if this is how to use **kwargs
     gB = [sub_cmd.operate(zip(*m)) for m in gM]  # must map along the same dim that as grouped?
     B = zip(gB)
-    xlrw.guess_write(B, t_book, t_sheet, *to_point)
+    xlrw.guess_write(B, t_book, t_sheet, tr0, tc0)
     '''
     xlrw.guess_write(zip(
                     [subCmd.operate(zip(*m)) for m in 
-                    grpFng(xlrw.guess_read(fBook, fSheet, fCrng, fRrng))]
-                    ), tBook, tSheetm *tp)
+                    grp_func(xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf))]
+                    ), t_book, t_sheet, tr0, tc0)
     '''
