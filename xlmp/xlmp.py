@@ -2,7 +2,7 @@ import xlrd
 import xlwt
 from itertools import groupby
 
-__all__ = ['xlmp', 'mpCmd', 'group_by_ids']  #, 'xlSmp']
+__all__ = ['xlmp', 'mpCmd', 'group_by_ids', 'Ixl']  #, 'xlSmp']
 
 
 class Ixl(object):
@@ -66,9 +66,10 @@ class Ixl(object):
         # TODO: Raise an error instead. Research which error to raise 
         assert not sheet.ragged_rows
         if rf < 0:
-            rf += sheet.nrows
-        # xlrd loops cf for us.
-        M = [s.row_values(r, c0, cf) for r in range(r0, rf)]
+            rf += sheet.nrows + 1
+        if cf < 0:
+            cf += sheet.ncols + 1
+        M = [sheet.row_values(r, c0, cf) for r in range(r0, rf)]
         return self.__transpose(M)
 
     def read_book(self, book_path, sheet_i=0, *args):
