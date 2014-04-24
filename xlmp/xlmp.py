@@ -67,6 +67,8 @@ class Ixl(object):
         assert not sheet.ragged_rows
         if rf < 0:
             rf += sheet.nrows + 1
+        # xlrd.sheet.row_values uses row[c0:cf]
+        # therefore cf=-1 excludes last.
         if cf < 0:
             cf += sheet.ncols + 1
         M = [sheet.row_values(r, c0, cf) for r in range(r0, rf)]
