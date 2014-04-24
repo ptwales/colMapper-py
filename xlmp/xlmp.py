@@ -44,6 +44,7 @@ class Ixl(object):
         Returns:
             M if if reading by row else it return the transpose of M
         """
+        print M
         return M if self.by_row else list(zip(*M))
 
     def read_sheet(self, sheet, c0=0, cf=-1, r0=0, rf=-1):
