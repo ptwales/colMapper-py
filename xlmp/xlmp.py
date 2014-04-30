@@ -57,7 +57,7 @@ class Ixl(object):
         rectangular list.
         
         Args:
-            sheet: The xlrd.book.sheet object that is read.
+            sheet: The xlrd.Sheet object that is read.
             c0, cf: inclusive column range to read from sheet.
             r0, rf: the inclusive row range to read from sheet.
         
@@ -103,20 +103,20 @@ class Ixl(object):
     def guess_read(self, sheet=0, book_path='', **kw_ranges):
         """Reads a dataset from sheet or book_path
         
-        Trys to read sheet as an xlrd.book.sheet object with
+        Trys to read sheet as an xlrd.Sheet object with
         read_sheet.  If sheet is not that object then it will
         read the book with read_book.  This function and guess_write
         should only be used in user interfaces so that users may
-        open their own xlrd.book.sheet objects and pass them quickly
+        open their own xlrd.Sheet objects and pass them quickly
         to xlmp.  Users cannot pass xlrd.book objects because they
         are expected to open the sheet objects.
         
         Args:
-            sheet: Either xlrd.book.sheet object to read or a sheet 
+            sheet: Either xlrd.Sheet object to read or a sheet 
             index or name of an sheet object in the book 
             at book_path.
             book_path: Path to a workbook file. Optionally, ignored 
-            if sheet is an xlrd.book.sheet object.
+            if sheet is an xlrd.Sheet object.
             c0=0, cf=-1, r0=0, rf=-1: The additional arguements passed to either 
             read_sheet or read_book.
         """
@@ -128,14 +128,27 @@ class Ixl(object):
 
     def write_sheet(self, M, sheet, c0=0, r0=0):
         """Writes dataset M to sheet starting at (c0, r0)
+        
+        Writes dataset M to xlwt sheet object starting at row=r0
+        and column=c0 and extending to the left and down, (increasing
+        row and column indexes). If set to read by_row then sub lists
+        of M will be rows otherwise sublists of M will be columns.
+        
+        Args:
+            M: dataset to write. A list of lists is expected.
+            sheet: xlrwt.Sheet object where the dataset M will be written.
+            c0: Initial column index of sheet to write the dataset.
+            r0: Initial row index of sheet to write the dataset.
         """
         M = self.__transpose(M)
-        for r in range(len(M)):
-            for c in range(len(M[r])):
-                sheet.write(r0 + r, c0 + c, M[r][c])
+        for r, row, in enumerate(M)):
+            for c, el in enumerate(row):
+                sheet.write(r0 + r, c0 + c, el)
 
     def write_book(self, M, book_path, sheet_name='xlmp',  **kw_to_point):
         """Writes dataset M to new workbook file at book_path.
+        
+        
         """
         book = xlwt.Workbook()
         sheet = book.add_sheet(sheet_name)
@@ -157,7 +170,8 @@ class mpCmd(dict):
     
     def __init__(self, map_dict, offset=0):
         self._Off = offset
-        for k in map_dict.keys():  # call __setitem__; don't redefine
+        # just call __setitem__ and be done with it
+        for k in map_dict.keys():
             self[k] = map_dict[k]
     
     def __setitem__(self, key, val):
@@ -176,8 +190,8 @@ class mpCmd(dict):
     def __replace_col_name(self, key):
         place = 1
         index = 0
-        for c in reversed(key):
-            index += place * (int(c.upper(), 36) - 9)
+        for char in reversed(key):
+            index += place * (int(char.upper(), 36) - 9)
             place *= 26
         index -= 1
         return index
@@ -203,12 +217,13 @@ class mpCmd(dict):
             else:  # this looks like horrible recursion
                 return var[0](*[evaluate(v, row) for v in var[1]])
             
-        X = list(range(max(self.keys()) + 1))
-        Y = list(range(len(M[0])))
-        B = [[None for i in X] for j in Y]
-        for i, r in zip(X, M):
+        x_range = range(max(self.keys()) + 1))
+        y_range = range(len(M[0])))
+        B = [[None for i in x_range] for j in y_range]
+        assert len(x_range) == len(M)
+        for i, row in enumerate(M):
             for k in self.keys():
-                B[i][k] = self.evaluate(self[k], r)
+                B[i][k] = self.evaluate(self[k], row)
         return B
 
 
@@ -216,13 +231,14 @@ def xlmp(cmd, map_by_col=True, f_book='', t_book='', f_sheet=0, t_sheet='xlmp',
          fc0=0,  fcf=-1, fr0=0, frf=-1, tr0=0, tc0=0):
              
     xlrw = Ixl(read_by_row=map_by_col)
+    '''
     M = xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf)
     B = cmd.operate(M)
     xlrw.guess_write(B, t_book, t_sheet, tr0, tc0)
     '''
     xlrw.guess_write(cmd.operate(xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf)),
                     t_book, t_sheet, tr0, tc0)
-    '''
+
 
 
 def group_by_ids(M, id_indexes):
@@ -234,17 +250,10 @@ def group_by_ids(M, id_indexes):
 # Still mock up
 def xlsmp(sub_cmd, grp_func, grp_by_col=True, f_book='', t_book='', 
           f_sheet=0, t_sheet='xlmp', fc0=0, fcf=-1, fr0=0, frf=-1,
-          tr0=0, tc0=0, **grp_kwargs):
+          tr0=0, tc0=0, **kw_grpargs):
               
     xlrw = Ixl(read_by_row=grp_by_col)
     M = xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf)
-    gM = grp_func(M, grp_kwargs)  # I don't know if this is how to use **kwargs
-    gB = [sub_cmd.operate(zip(*m)) for m in gM]  # must map along the same dim that as grouped?
-    B = zip(gB)
+    # must we map along the same dim that as grouped?
+    B = zip([sub_cmd.operate(zip(*m)) for m in grp_func(M, **kw_grpargs)])
     xlrw.guess_write(B, t_book, t_sheet, tr0, tc0)
-    '''
-    xlrw.guess_write(zip(
-                    [subCmd.operate(zip(*m)) for m in 
-                    grp_func(xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf))]
-                    ), t_book, t_sheet, tr0, tc0)
-    '''
