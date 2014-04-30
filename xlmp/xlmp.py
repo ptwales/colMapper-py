@@ -77,7 +77,7 @@ class Ixl(object):
         M = [sheet.row_values(r, c0, cf) for r in range(r0, rf)]
         return self.__transpose(M)
 
-    def read_book(self, book_path, sheet_i=0, c0=0, cf=-1, r0=0, rf=-1):
+    def read_book(self, book_path, sheet_i=0, **kw_ranges):
         """Opens book_path and reads dataset from sheet_i.
         
         Reads the file at book_path and gets sheet_i of it.
@@ -98,9 +98,9 @@ class Ixl(object):
             sheet = book.sheet_by_index(sheet_i)
         except TypeError:
             sheet = book.sheet_by_name(sheet_i)
-        return self.read_sheet(sheet, c0, cf, r0, rf)
+        return self.read_sheet(sheet, **kw_ranges)
 
-    def guess_read(self, sheet=0, book_path='', c0=0, cf=-1, r0=0, rf=-1):
+    def guess_read(self, sheet=0, book_path='', **kw_ranges):
         """Reads a dataset from sheet or book_path
         
         Trys to read sheet as an xlrd.book.sheet object with
@@ -121,9 +121,9 @@ class Ixl(object):
             read_sheet or read_book.
         """
         try:
-            M = self.read_sheet(sheet, c0, cf, r0, rf)
+            M = self.read_sheet(sheet, **kw_ranges)
         except AttributeError:
-            M = self.read_book(book_path, sheet, c0, cf, r0, rf)
+            M = self.read_book(book_path, sheet, **kw_ranges)
         return M
 
     def write_sheet(self, M, sheet, c0=0, r0=0):
@@ -134,21 +134,21 @@ class Ixl(object):
             for c in range(len(M[r])):
                 sheet.write(r0 + r, c0 + c, M[r][c])
 
-    def write_book(self, M, book_path, sheet_name='xlmp',  c0=0, r0=0):
+    def write_book(self, M, book_path, sheet_name='xlmp',  **kw_to_point):
         """Writes dataset M to new workbook file at book_path.
         """
         book = xlwt.Workbook()
         sheet = book.add_sheet(sheet_name)
-        self.write_sheet(M, sheet,  c0, r0)
+        self.write_sheet(M, sheet, **kw_to_point)
         book.save(book_path)
 
-    def guess_write(self, M, sheet, book_path='',  c0=0, r0=0):
+    def guess_write(self, M, sheet, book_path='', **kw_to_point):
         """Writes dataset M to existing sheet or new workbook file at book_path.
         """
         try:
             self.write_sheet(M, sheet,  c0, r0)
         except AttributeError:
-            self.write_book(M, book_path, sheet,  c0, r0)
+            self.write_book(M, book_path, sheet, **kw_to_point)
 
 
 class mpCmd(dict):
