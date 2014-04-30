@@ -141,7 +141,7 @@ class Ixl(object):
             r0: Initial row index of sheet to write the dataset.
         """
         M = self.__transpose(M)
-        for r, row, in enumerate(M)):
+        for r, row, in enumerate(M):
             for c, el in enumerate(row):
                 sheet.write(r0 + r, c0 + c, el)
 
@@ -217,8 +217,8 @@ class mpCmd(dict):
             else:  # this looks like horrible recursion
                 return var[0](*[evaluate(v, row) for v in var[1]])
             
-        x_range = range(max(self.keys()) + 1))
-        y_range = range(len(M[0])))
+        x_range = range(max(self.keys()) + 1)
+        y_range = range(len(M[0]))
         B = [[None for i in x_range] for j in y_range]
         assert len(x_range) == len(M)
         for i, row in enumerate(M):
