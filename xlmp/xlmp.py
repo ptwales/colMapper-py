@@ -44,8 +44,10 @@ class Ixl(object):
         Returns:
             M if if reading by row else it return the transpose of M
         """
-        print M
-        return M if self.by_row else list(zip(*M))
+        if self.by_row:
+            return M
+        else:
+            return [list(a) for a in zip(*M)]
 
     def read_sheet(self, sheet, c0=0, cf=-1, r0=0, rf=-1):
         """Reads a rectangular list from sheet.
@@ -73,7 +75,7 @@ class Ixl(object):
         M = [sheet.row_values(r, c0, cf) for r in range(r0, rf)]
         return self.__transpose(M)
 
-    def read_book(self, book_path, sheet_i=0, *args):
+    def read_book(self, book_path, sheet_i=0, c0=0, cf=-1, r0=0, rf=-1):
         """Opens book_path and reads dataset from sheet_i.
         
         Reads the file at book_path and gets sheet_i of it.
@@ -83,20 +85,20 @@ class Ixl(object):
             book_path: The path to the workbook file to read.
             sheet_i: The zero-offset index or name of the sheet
             of the book to read.
-            *args: additional arguments to pass to read_sheet.
+            c0=0, cf=-1, r0=0, rf=-1: additional arguments to pass to read_sheet.
         
         Returns: 
             Rectangular list of cell values of the sheet_i sheet of
-            the book at book_path within the ranges passed in *args.
+            the book at book_path within the ranges passed in c0=0, cf=-1, r0=0, rf=-1.
         """
         book = xlrd.open_workbook(book_path)
         try:
             sheet = book.sheet_by_index(sheet_i)
         except TypeError:
             sheet = book.sheet_by_name(sheet_i)
-        return self.read_sheet(sheet, *args)
+        return self.read_sheet(sheet, c0, cf, r0, rf)
 
-    def guess_read(self, sheet, book_path='', *args):
+    def guess_read(self, sheet=0, book_path='', c0=0, cf=-1, r0=0, rf=-1):
         """Reads a dataset from sheet or book_path
         
         Trys to read sheet as an xlrd.book.sheet object with
@@ -113,13 +115,13 @@ class Ixl(object):
             at book_path.
             book_path: Path to a workbook file. Optionally, ignored 
             if sheet is an xlrd.book.sheet object.
-            *args: The additional arguements passed to either 
+            c0=0, cf=-1, r0=0, rf=-1: The additional arguements passed to either 
             read_sheet or read_book.
         """
         try:
-            M = self.read_sheet(sheet, *args)
+            M = self.read_sheet(sheet, c0, cf, r0, rf)
         except AttributeError:
-            M = self.read_book(sheet, book_path, *args)
+            M = self.read_book(book_path, sheet, c0, cf, r0, rf)
         return M
 
     def write_sheet(self, M, sheet, c0=0, r0=0):
@@ -130,21 +132,21 @@ class Ixl(object):
             for c in range(len(M[r])):
                 sheet.write(r0 + r, c0 + c, M[r][c])
 
-    def write_book(self, M, book_path, sheet_name='xlmp', *args):
+    def write_book(self, M, book_path, sheet_name='xlmp',  c0=0, r0=0):
         """Writes dataset M to new workbook file at book_path.
         """
         book = xlwt.Workbook()
         sheet = book.add_sheet(sheet_name)
-        self.write_sheet(M, sheet, *args)
+        self.write_sheet(M, sheet,  c0, r0)
         book.save(book_path)
 
-    def guess_write(self, M, sheet, book_path='', *args):
+    def guess_write(self, M, sheet, book_path='',  c0=0, r0=0):
         """Writes dataset M to existing sheet or new workbook file at book_path.
         """
         try:
-            self.write_sheet(M, sheet, *args)
+            self.write_sheet(M, sheet,  c0, r0)
         except AttributeError:
-            self.write_book(M, book_path, sheet, *args)
+            self.write_book(M, book_path, sheet,  c0, r0)
 
 
 class mpCmd(dict):
