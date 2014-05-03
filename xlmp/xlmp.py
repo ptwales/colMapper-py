@@ -5,10 +5,10 @@ from itertools import groupby
 __all__ = ['xlmp', 'mpCmd', 'group_by_ids', 'Ixl']  #, 'xlSmp']
 
 
-class Ixl(object):
+class _ExcelInterface(object):
     """xlmp's interface to the xlrd and xlwt modules.
     
-    Ixl reads a rectangular list from a sheet or write one
+    ExcelInterface reads a rectangular list from a sheet or write one
     to the sheet.  It also transposes the list in reading
     and writing if by_row = False.
     Sheets read must not have ragged rows.
@@ -22,8 +22,8 @@ class Ixl(object):
     
     def __init__(self, read_by_row=True):
         """
-        Initilizes the Ixl object with boolean by_row of whether sub-lists
-        should be rows or columns of read sheets.
+        Initilizes the ExcelInterface object with boolean by_row 
+        of whether sub-lists should be rows or columns of read sheets.
         
         Args:
             read_by_row: If true sub-lists are rows else columns
@@ -91,7 +91,8 @@ class Ixl(object):
         
         Returns: 
             Rectangular list of cell values of the sheet_i sheet of
-            the book at book_path within the ranges passed in c0=0, cf=-1, r0=0, rf=-1.
+            the book at book_path within the ranges passed in c0=0, 
+            cf=-1, r0=0, rf=-1.
         """
         book = xlrd.open_workbook(book_path)
         try:
@@ -117,8 +118,8 @@ class Ixl(object):
             at book_path.
             book_path: Path to a workbook file. Optionally, ignored 
             if sheet is an xlrd.Sheet object.
-            c0=0, cf=-1, r0=0, rf=-1: The additional arguements passed to either 
-            read_sheet or read_book.
+            c0=0, cf=-1, r0=0, rf=-1: The additional arguements passed 
+            to either read_sheet or read_book.
         """
         try:
             M = self.read_sheet(sheet, **kw_ranges)
@@ -200,7 +201,7 @@ class mpCmd(dict):
     # where F_j(M_i) = B[i][j]
     # default is by cols of F and rows of M
     # M must be transposed beforehand for other method
-    def operate(self, M):
+    def operate(self, data_matrix):
         # Source of my woes
         # returns $f(\vec{r})$
         # unless f is a string then it returns f
@@ -218,42 +219,40 @@ class mpCmd(dict):
                 return var[0](*[evaluate(v, row) for v in var[1]])
             
         x_range = range(max(self.keys()) + 1)
-        y_range = range(len(M[0]))
+        y_range = range(len(data_matrix[0]))
         B = [[None for i in x_range] for j in y_range]
-        assert len(x_range) == len(M)
-        for i, row in enumerate(M):
+        assert len(x_range) == len(data_matrix)
+        for i, row in enumerate(data_matrix):
             for k in self.keys():
                 B[i][k] = self.evaluate(self[k], row)
         return B
 
-
+# xlmp should not need to know the kwargs of guess_read and
+# guess_write
 def xlmp(cmd, map_by_col=True, f_book='', t_book='', f_sheet=0, t_sheet='xlmp',
-         fc0=0,  fcf=-1, fr0=0, frf=-1, tr0=0, tc0=0):
-             
-    xlrw = Ixl(read_by_row=map_by_col)
-    '''
-    M = xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf)
-    B = cmd.operate(M)
-    xlrw.guess_write(B, t_book, t_sheet, tr0, tc0)
-    '''
-    xlrw.guess_write(cmd.operate(xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf)),
-                    t_book, t_sheet, tr0, tc0)
+         from_ranges, to_point):
+    xl_interface = _ExcelInterface(read_by_row=map_by_col)
+    data_matrix = xl_interface.guess_read(f_book, f_sheet, **from_ranges)
+    mapped_matrix = cmd.operate(data_matrix) 
+    xlrw.guess_write(mapped_matrix, t_book, t_sheet, **to_point)
 
 
 
-def group_by_ids(M, id_indexes):
-    id_func = lambda x: [x[i] for i in id_indexes]
-    M.sort(key=id_indexes)
-    return [list(g) for k, g in groupby(M, id_func)]
+def group_by_ids(data_matrix, id_indexes):
+    
+    def id_func(x):
+        return [x[i] for i in id_indexes]
+        
+    data_matrix.sort(key=id_indexes)
+    return [list(g) for k, g in groupby(data_matrix, id_func)]
 
 
 # Still mock up
 def xlsmp(sub_cmd, grp_func, grp_by_col=True, f_book='', t_book='', 
-          f_sheet=0, t_sheet='xlmp', fc0=0, fcf=-1, fr0=0, frf=-1,
-          tr0=0, tc0=0, **kw_grpargs):
-              
-    xlrw = Ixl(read_by_row=grp_by_col)
-    M = xlrw.guess_read(f_book, f_sheet, fc0, fcf, fr0, frf)
-    # must we map along the same dim that as grouped?
-    B = zip([sub_cmd.operate(zip(*m)) for m in grp_func(M, **kw_grpargs)])
-    xlrw.guess_write(B, t_book, t_sheet, tr0, tc0)
+          f_sheet=0, t_sheet='xlmp', from_ranges, to_point, grp_func_kwargs):
+    xl_interface = _ExcelInterface(read_by_row=grp_by_col)
+    data_matrix = xl_interface.guess_read(f_book, f_sheet, **from_ranges)
+    block_matrix = grp_func(data_matrix, **grp_func_kwargs)
+    # map each block then merge the mapped_blocks
+    mapped_matrix = zip([sub_cmd.operate(zip(*block)) for block in block_matrix])
+    xl_interface.guess_write(mapped_matrix, t_book, t_sheet, **to_point)
