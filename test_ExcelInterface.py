@@ -5,10 +5,10 @@ import unittest
 
 DEFAULT_LIMIT = 26
 DEFAULT_RANGE = list(range(0, DEFAULT_LIMIT))
-XL_EXTS = ['.xls', '.xlsx'] #, '.ods'] ods not supported...
+XL_EXTS = ['.xls', '.xlsx']  # , '.ods'] ods not supported...
 TEST_NAME = 'test'
 TEST_BOOKS = [TEST_NAME + exts for exts in XL_EXTS]
-TEST_MATRIX = [[unicode(string.uppercase[c] + str(r + 1), 'utf8') 
+TEST_MATRIX = [[unicode(string.uppercase[c] + str(r + 1), 'utf8')
                 for c in DEFAULT_RANGE] for r in DEFAULT_RANGE]
 TRANSPOSED = [[unicode(string.uppercase[c] + str(r + 1), 'utf8')
                for r in DEFAULT_RANGE] for c in DEFAULT_RANGE]
@@ -25,31 +25,31 @@ def loop_range(func, *args):
             func(initial, final, *args)
 
 
-class TestIxl(unittest.TestCase):
+class TestExcelInterface(unittest.TestCase):
 
     def setUp(self):
         self.xl_interface = xlmp._ExcelInterface(True)
 
     def test_transpose(self):
         self.assertEqual(TEST_MATRIX,
-            self.xl_interface.__ExcelInterface__transpose(TEST_MATRIX)
+            self.xl_interface._ExcelInterface__transpose(TEST_MATRIX)
             )
         self.xl_interface.by_row = False
         self.assertEqual(TRANSPOSED,
-            self.xl_interface.__ExcelInterface__transpose(TEST_MATRIX)
+            self.xl_interface._ExcelInterface__transpose(TEST_MATRIX)
             )
 
     def test_read_sheet(self):
 
         def scan_ranges(i, f, s):
-            self.xlrw.by_row = True
+            self.xl_interface.by_row = True
             self.assertEqual(TEST_MATRIX[i:f],
                 self.xl_interface.read_sheet(s, r0=i, rf=f)
                 )
             self.assertEqual([m[i:f] for m in TEST_MATRIX],
-                self.xlrw.read_sheet(s, c0=i, cf=f)
+                self.xl_interface.read_sheet(s, c0=i, cf=f)
                 )
-            self.xlrw.by_row = False
+            self.xl_interface.by_row = False
             self.assertEqual(TRANSPOSED[i:f],
                 self.xl_interface.read_sheet(s, c0=i, cf=f)
                 )
@@ -89,7 +89,7 @@ class TestIxl(unittest.TestCase):
     #def test_write_sheet(self):
     #def test_write_book(self):
     #def test_guess_write(self):
-    
-    
+
+
 if __name__ == '__main__':
     unittest.main()
