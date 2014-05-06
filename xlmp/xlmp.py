@@ -30,8 +30,8 @@ class _ExcelInterface(object):
         """
         self.by_row = read_by_row
 
-    def __transpose(self, M):
-        """Transposes M if reading by column.
+    def __transpose(self, data_matrix):
+        """Transposes data_matrix if reading by column.
 
         Private method to transpose datasets, if sub-lists
         correspond to columns and not rows, before reading
@@ -45,9 +45,9 @@ class _ExcelInterface(object):
             M if if reading by row else it return the transpose of M
         """
         if self.by_row:
-            return M
+            return data_matrix
         else:
-            return [list(a) for a in zip(*M)]
+            return [list(a) for a in zip(*data_matrix)]
 
     def read_sheet(self, sheet, c0=0, cf=-1, r0=0, rf=-1):
         """Reads a rectangular list from sheet.
@@ -74,8 +74,8 @@ class _ExcelInterface(object):
         # therefore cf=-1 excludes last.
         if cf < 0:
             cf += sheet.ncols + 1
-        M = [sheet.row_values(r, c0, cf) for r in range(r0, rf)]
-        return self.__transpose(M)
+        data_matrix = [sheet.row_values(r, c0, cf) for r in range(r0, rf)]
+        return self.__transpose(data_matrix)
 
     def read_book(self, book_path, sheet_i=0, **kw_ranges):
         """Opens book_path and reads dataset from sheet_i.
@@ -122,13 +122,13 @@ class _ExcelInterface(object):
             to either read_sheet or read_book.
         """
         try:
-            M = self.read_sheet(sheet, **kw_ranges)
+            data_matrix = self.read_sheet(sheet, **kw_ranges)
         except AttributeError:
-            M = self.read_book(book_path, sheet, **kw_ranges)
-        return M
+            data_matrix = self.read_book(book_path, sheet, **kw_ranges)
+        return data_matrix
 
-    def write_sheet(self, M, sheet, c0=0, r0=0):
-        """Writes dataset M to sheet starting at (c0, r0)
+    def write_sheet(self, data_matrix, sheet, c0=0, r0=0):
+        """Writes dataset data_matrix to sheet starting at (c0, r0)
 
         Writes dataset M to xlwt sheet object starting at row=r0
         and column=c0 and extending to the left and down, (increasing
@@ -136,32 +136,32 @@ class _ExcelInterface(object):
         of M will be rows otherwise sublists of M will be columns.
 
         Args:
-            M: dataset to write. A list of lists is expected.
+            data_matrix: dataset to write. A list of lists is expected.
             sheet: xlrwt.Sheet object where the dataset M will be written.
             c0: Initial column index of sheet to write the dataset.
             r0: Initial row index of sheet to write the dataset.
         """
-        M = self.__transpose(M)
-        for r, row, in enumerate(M):
+        data_matrix = self.__transpose(data_matrix)
+        for r, row, in enumerate(data_matrix):
             for c, el in enumerate(row):
                 sheet.write(r0 + r, c0 + c, el)
 
-    def write_book(self, M, book_path, sheet_name='xlmp', **kw_to_point):
-        """Writes dataset M to new workbook file at book_path.
+    def write_book(self, data_matrix, book_path, sheet_name='xlmp', **kw_to_point):
+        """Writes dataset data_matrix to new workbook file at book_path.
 
         """
         book = xlwt.Workbook()
         sheet = book.add_sheet(sheet_name)
-        self.write_sheet(M, sheet, **kw_to_point)
+        self.write_sheet(data_matrix, sheet, **kw_to_point)
         book.save(book_path)
 
-    def guess_write(self, M, sheet, book_path='', **kw_to_point):
-        """Writes dataset M to existing sheet or new workbook file at book_path.
+    def guess_write(self, data_matrix, sheet, book_path='', **kw_to_point):
+        """Writes dataset data_matrix to existing sheet or new workbook file at book_path.
         """
         try:
-            self.write_sheet(M, sheet, **kw_to_point)
+            self.write_sheet(data_matrix, sheet, **kw_to_point)
         except AttributeError:
-            self.write_book(M, book_path, sheet, **kw_to_point)
+            self.write_book(data_matrix, book_path, sheet, **kw_to_point)
 
 
 class mpCmd(dict):
@@ -219,12 +219,12 @@ class mpCmd(dict):
 
         x_range = range(max(self.keys()) + 1)
         y_range = range(len(data_matrix[0]))
-        B = [[None for i in x_range] for j in y_range]
+        resultant_matrix = [[None for i in x_range] for j in y_range]
         assert len(x_range) == len(data_matrix)
         for i, row in enumerate(data_matrix):
             for k in self.keys():
-                B[i][k] = self.evaluate(self[k], row)
-        return
+                resultant_matrix[i][k] = self.evaluate(self[k], row)
+        return resultant_matrix
 
 
 # xlmp should not need to know the kwargs of guess_read and
