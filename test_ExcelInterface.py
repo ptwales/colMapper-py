@@ -12,6 +12,7 @@ TEST_MATRIX = [[unicode(string.uppercase[c] + str(r + 1), 'utf8')
                 for c in DEFAULT_RANGE] for r in DEFAULT_RANGE]
 TRANSPOSED = [[unicode(string.uppercase[c] + str(r + 1), 'utf8')
                for r in DEFAULT_RANGE] for c in DEFAULT_RANGE]
+C0, CF, R0, RF = 3, 15, 5, 20
 SUB_MATRIX = [row[3:15] for row in TEST_MATRIX[5:20]]
 
 
@@ -73,20 +74,36 @@ class TestExcelInterface(unittest.TestCase):
                 )
             # I have already tested argument lists
             self.assertEqual(SUB_MATRIX,
-                self.xl_interface.read_book(book, 0, r0=5, rf=20, c0=3, cf=15)
+                self.xl_interface.read_book(book, 0, r0=R0, rf=RF, c0=C0, cf=CF)
                 )
 
-    def test_guess_read(self):
+    def test_guess_read(self): 
         for book in TEST_BOOKS:
             self.assertEqual(TEST_MATRIX,
                 self.xl_interface.guess_read(
-                    sheet=xlrd.open_workbook(book).sheet_by_index(0))
+                    sheet=xlrd.open_workbook(book).sheet_by_index(0)
+                    )
                 )
             self.assertEqual(TEST_MATRIX,
                 self.xl_interface.guess_read(book_path=book)
                 )
 
-    #def test_write_sheet(self):
+    def test_write_sheet(self):
+        book_path = TEST_BOOKS[0]
+        book = Workbook()
+        sheet = book.add_sheet(0)
+        self.xl_interface.write_sheet(TEST_MATRIX, sheet)
+        book.Save("write_" + book_path)
+        book = Workbook()
+        sheet = book.add_sheet(0)
+        self.xl_interface.write_sheet(SUB_MATRIX, sheet, r0=R0, c0=C0)
+        book.Save("write_sub_" + book_path)
+        self.xl_interface.by_row = False
+        book = Workbook()
+        sheet = book.add_sheet(0)
+        self.xl_interface.write_sheet(TEST_MATRIX, sheet)
+        book.Save("write_trans_" + book_path)
+            
     #def test_write_book(self):
     #def test_guess_write(self):
 
