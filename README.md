@@ -7,7 +7,8 @@ Mapping is based on a similar procedures as matrix multiplication meaning xlmp m
 This means that the number of rows or columns in equal the number of rows or columns out if you map by columns or rows, respectively.
 With the exception of sub-mapping, where xlmp partitions the data set along one axis and then maps each sub-set along the other axis.
 
-## Usage
+Usage
+-----
 
 Mapping is done by defining an _xlmp.mpCmd_ object,
 
@@ -56,7 +57,8 @@ This feature may become depreciated so it is best to handle such cases with an e
 Remember that `'AAA'` will evaluate to itself and not the column name.
 Also _mpfunc.py_ defines some useful functions that may be needed often.
 
-## Methodology
+Methodology
+-----------
 
 xlmp treats ranges of spread-sheets as matricies without regarding the data type of any cell.
 All values of the specified origin range are read as rectangular list of lists through an interface to xlrd and xlwt.
@@ -115,19 +117,21 @@ G does not need to be transposed in code as it is just a dictionary of functions
 
 Sub Mapping hasn't been tested _at all_ yet.
 
-## Dependencies
+Dependencies
+------------
 
 - Python [xlrd module](https://github.com/python-excel/xlrd)
 - Python [xlwt module](https://github.com/python-excel/xlwt)
 - Python 2.3 - 2.7 (As needed by above)
 
-## License
+License
+-------
  
- Copyright (C) 2014 Philip Wales
-
- This software is licensed under the GNU Lesser General Public License (LGPL), version 3 ("the License").
- See the License for details about distribution rights, and the specific rights regarding derivate works.
- You may obtain a copy of the License at:
- 
- <http://www.gnu.org/licenses/licenses.html>
+> Copyright (C) 2014 Philip Wales
+> 
+>  This software is licensed under the GNU Lesser General Public License (LGPL), version 3 ("the License").
+>  See the License for details about distribution rights, and the specific rights regarding derivate works.
+>  You may obtain a copy of the License at:
+>
+> <http://www.gnu.org/licenses/licenses.html>
 
