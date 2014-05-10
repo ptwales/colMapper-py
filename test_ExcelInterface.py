@@ -1,5 +1,6 @@
 import xlmp
 import xlrd
+import xlwt
 import string
 import unittest
 
@@ -90,19 +91,19 @@ class TestExcelInterface(unittest.TestCase):
 
     def test_write_sheet(self):
         book_path = TEST_BOOKS[0]
-        book = Workbook()
-        sheet = book.add_sheet(0)
+        book = xlwt.Workbook()
+        sheet = book.add_sheet('xlmp')
         self.xl_interface.write_sheet(TEST_MATRIX, sheet)
-        book.Save("write_" + book_path)
-        book = Workbook()
-        sheet = book.add_sheet(0)
+        book.save("write_" + book_path)
+        book = xlwt.Workbook()
+        sheet = book.add_sheet('xlmp')
         self.xl_interface.write_sheet(SUB_MATRIX, sheet, r0=R0, c0=C0)
-        book.Save("write_sub_" + book_path)
+        book.save("write_sub_" + book_path)
         self.xl_interface.by_row = False
-        book = Workbook()
-        sheet = book.add_sheet(0)
+        book = xlwt.Workbook()
+        sheet = book.add_sheet('xlmp')
         self.xl_interface.write_sheet(TEST_MATRIX, sheet)
-        book.Save("write_trans_" + book_path)
+        book.save("write_trans_" + book_path)
             
     #def test_write_book(self):
     #def test_guess_write(self):

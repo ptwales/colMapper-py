@@ -178,7 +178,7 @@ class mpCmd(dict):
         if isinstance(key, str):
             key = self.__replace_col_name(key)
         elif isinstance(key, int):
-            key += self._Off  # names are not offset
+            key -= self._Off  # names are not offset
         else:
             raise TypeError
         super(mpCmd, self).__setitem__(key, val)
@@ -196,26 +196,27 @@ class mpCmd(dict):
         index -= 1
         return index
 
+    # Source of my woes
+    # returns $f(\vec{r})$
+    # unless f is a string then it returns f
+    # or if f is an int then it returns r[f]
+    # Need a better structure for handeling functions
+    #
+    # TODO: specialize indexes instead of strings and ints
+    # new class def may be needed.
+    def evaluate(self, var, row):
+        if isinstance(var, str):
+            return var
+        elif isinstance(var, int):
+            return row[var - self._Off]
+        else:  # this looks like horrible recursion
+            return var[0](*[self.evaluate(v, row) for v in var[1]])
+
     # performs [M].[F] = B
     # where F_j(M_i) = B[i][j]
     # default is by cols of F and rows of M
     # M must be transposed beforehand for other method
     def operate(self, data_matrix):
-        # Source of my woes
-        # returns $f(\vec{r})$
-        # unless f is a string then it returns f
-        # or if f is an int then it returns r[f]
-        # Need a better structure for handeling functions
-        #
-        # TODO: specialize indexes instead of strings and ints
-        # new class def may be needed.
-        def evaluate(self, var, row):
-            if isinstance(var, str):
-                return var
-            elif isinstance(var, int):
-                return row[var - self._Off]
-            else:  # this looks like horrible recursion
-                return var[0](*[evaluate(v, row) for v in var[1]])
 
         x_range = range(max(self.keys()) + 1)
         y_range = range(len(data_matrix[0]))
