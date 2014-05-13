@@ -200,14 +200,8 @@ class mpCmd(dict):
             raise TypeError
 
     def __convert_name_to_index(self, col_name):
-        place = 1
-        col_index = 0
-        for char in reversed(col_name):
-            col_index += place * (int(char.upper(), 36) - 9)
-            place *= 26
-        col_index -= 1
-        return col_index
-
+        return reduce((lambda index, char: index*26 + int(char, 36) - 9),
+                      col_name, 0) - 1
 
 # performs [M].[F] = B
 # where F_j(M_i) = B[i][j]
