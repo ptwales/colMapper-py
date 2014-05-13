@@ -185,11 +185,15 @@ class mpCmd(dict):
 
     def __convert_val(self, val):
         if isinstance(val, int):
-            return (lambda row, index=val: row[index - self.__offset])
+            index = val - self.__offset
+            return (lambda row, index=index: row[index])
+        elif isinstance(val, str):
+            index = self.__convert_name_to_index(val)
+            return (lambda row, index=index: row[index])
         elif callable(val):
             return val
         else:
-            return (lambda *args: val)
+            return (lambda *args **kwargs: val)
 
     def __convert_key(self, key):
         if isinstance(key, str):
