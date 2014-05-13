@@ -171,21 +171,21 @@ class mpCmd(dict):
     """
 
     def __init__(self, map_dict, off_set=0):
-        self.offset = off_set
+        self.__offset = off_set
         # just call __setitem__ and be done with it
         for k in map_dict.keys():
             self[k] = map_dict[k]
 
     def __setitem__(self, key, val):
-        key, val = __convert_item(key, val)
+        key, val = self.__convert_item(key, val)
         super(mpCmd, self).__setitem__(key, val)
 
     def __convert_item(self, key, val):
-        return __convert_key(key), __convert_val(val)
+        return self.__convert_key(key), self.__convert_val(val)
 
     def __convert_val(self, val):
         if isinstance(val, int):
-            return (lambda row: row[val - self.offset])
+            return (lambda row, index=val: row[index - self.__offset])
         elif callable(val):
             return val
         else:
@@ -194,8 +194,8 @@ class mpCmd(dict):
     def __convert_key(self, key):
         if isinstance(key, str):
             return self.__convert_name_to_index(key)
-        elif isinstance(key, int, long):
-            return key - self.offset
+        elif isinstance(key, int):
+            return key - self.__offset
         else:
             raise TypeError
 
