@@ -146,7 +146,8 @@ class _ExcelInterface(object):
             for c, el in enumerate(row):
                 sheet.write(r0 + r, c0 + c, el)
 
-    def write_book(self, data_matrix, book_path, sheet_name='xlmp', **kw_to_point):
+    def write_book(self, data_matrix, book_path, sheet_name='xlmp',
+                  **kw_to_point):
         """Writes dataset data_matrix to new workbook file at book_path.
 
         """
@@ -156,7 +157,8 @@ class _ExcelInterface(object):
         book.save(book_path)
 
     def guess_write(self, data_matrix, sheet, book_path='', **kw_to_point):
-        """Writes dataset data_matrix to existing sheet or new workbook file at book_path.
+        """Writes dataset data_matrix to existing sheet or new workbook file at
+        book_path.
         """
         try:
             self.write_sheet(data_matrix, sheet, **kw_to_point)
@@ -168,64 +170,59 @@ class mpCmd(dict):
     """Stores user defined maps and performs the map operations
     """
 
-    def __init__(self, map_dict, offset=0):
-        self._Off = offset
+    def __init__(self, map_dict, off_set=0):
+        self.offset = off_set
         # just call __setitem__ and be done with it
         for k in map_dict.keys():
             self[k] = map_dict[k]
 
     def __setitem__(self, key, val):
-        if isinstance(key, str):
-            key = self.__replace_col_name(key)
-        elif isinstance(key, int):
-            key -= self._Off  # names are not offset
-        else:
-            raise TypeError
+        key, val = __convert_item(key, val)
         super(mpCmd, self).__setitem__(key, val)
 
-# Still in ToX style documentation
-    # Converts all of the keys that are strings to
-    # integers, assuming that strings are xl colnames.
-    # unnecessary function only for client side conviencence.
-    def __replace_col_name(self, key):
+    def __convert_item(self, key, val):
+        return __convert_key(key), __convert_val(val)
+
+    def __convert_val(self, val):
+        if isinstance(val, int):
+            return (lambda row: row[val - self.offset])
+        elif callable(val):
+            return val
+        else:
+            return (lambda *args: val)
+
+    def __convert_key(self, key):
+        if isinstance(key, str):
+            return self.__convert_name_to_index(key)
+        elif isinstance(key, int, long):
+            return key - self.offset
+        else:
+            raise TypeError
+
+    def __convert_name_to_index(self, col_name):
         place = 1
-        index = 0
-        for char in reversed(key):
-            index += place * (int(char.upper(), 36) - 9)
+        col_index = 0
+        for char in reversed(col_name):
+            col_index += place * (int(char.upper(), 36) - 9)
             place *= 26
-        index -= 1
-        return index
+        col_index -= 1
+        return col_index
 
-    # Source of my woes
-    # returns $f(\vec{r})$
-    # unless f is a string then it returns f
-    # or if f is an int then it returns r[f]
-    # Need a better structure for handeling functions
-    #
-    # TODO: specialize indexes instead of strings and ints
-    # new class def may be needed.
-    def evaluate(self, var, row):
-        if isinstance(var, str):
-            return var
-        elif isinstance(var, int):
-            return row[var - self._Off]
-        else:  # this looks like horrible recursion
-            return var[0](*[self.evaluate(v, row) for v in var[1]])
 
-    # performs [M].[F] = B
-    # where F_j(M_i) = B[i][j]
-    # default is by cols of F and rows of M
-    # M must be transposed beforehand for other method
-    def operate(self, data_matrix):
-
-        x_range = range(max(self.keys()) + 1)
-        y_range = range(len(data_matrix[0]))
-        resultant_matrix = [[None for i in x_range] for j in y_range]
-        assert len(x_range) == len(data_matrix)
-        for i, row in enumerate(data_matrix):
-            for k in self.keys():
-                resultant_matrix[i][k] = self.evaluate(self[k], row)
-        return resultant_matrix
+# performs [M].[F] = B
+# where F_j(M_i) = B[i][j]
+# default is by cols of F and rows of M
+# M must be transposed beforehand for other method
+def operate(map_commad, data_matrix):
+    x_range = range(max(map_command.keys()) + 1)
+    y_range = range(len(data_matrix[0]))
+    # preallocate because some columns could be skipped
+    resultant_matrix = [[None for i in x_range] for j in y_range]
+    assert len(x_range) == len(data_matrix)
+    for i, row in enumerate(data_matrix):
+        for k in map_command.keys():
+            resultant_matrix[i][k] = map_command[k](row)
+    return resultant_matrix
 
 
 # xlmp should not need to know the kwargs of guess_read and
@@ -255,5 +252,6 @@ def xlsmp(sub_cmd, grp_func, grp_by_col=True, f_book='', t_book='',
     data_matrix = xl_interface.guess_read(f_book, f_sheet, **from_ranges)
     block_matrix = grp_func(data_matrix, **grp_func_kwargs)
     # map each block then merge the mapped_blocks
-    mapped_matrix = zip([sub_cmd.operate(zip(*block)) for block in block_matrix])
+    mapped_matrix = zip([sub_cmd.operate(zip(*block))
+                         for block in block_matrix])
     xl_interface.guess_write(mapped_matrix, t_book, t_sheet, **to_point)
