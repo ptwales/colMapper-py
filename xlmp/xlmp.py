@@ -170,8 +170,11 @@ class mpCmd(dict):
     """Stores user defined maps and performs the map operations
     """
 
-    def __init__(self, map_dict, off_set=0):
+    def __init__(self, map_dict, off_set=0, 
+                 int_is_index=True, str_is_name=False):
         self.__offset = off_set
+        self.int_is_index = int_is_index
+        self.str_is_name = str_is_name
         # just call __setitem__ and be done with it
         for k in map_dict.keys():
             self[k] = map_dict[k]
@@ -184,26 +187,27 @@ class mpCmd(dict):
         return self.__convert_key(key), self.__convert_val(val)
 
     def __convert_val(self, val):
-        if isinstance(val, int):
+        if isinstance(val, int) and self.int_is_index:
             index = val - self.__offset
             return (lambda row, index=index: row[index])
-        elif isinstance(val, str):
-            index = self.__convert_name_to_index(val)
+        elif isinstance(val, str) and self.str_is_name:
+            index = self.__name_to_index(val)
             return (lambda row, index=index: row[index])
         elif callable(val):
+            # TODO: index Param Passing, ASAP
             return val
         else:
             return (lambda *args **kwargs: val)
 
     def __convert_key(self, key):
         if isinstance(key, str):
-            return self.__convert_name_to_index(key)
+            return self.__name_to_index(key)
         elif isinstance(key, int):
             return key - self.__offset
         else:
             raise TypeError
 
-    def __convert_name_to_index(self, col_name):
+    def __name_to_index(self, col_name):
         return reduce((lambda index, char: index*26 + int(char, 36) - 9),
                       col_name, 0) - 1
 
@@ -211,7 +215,7 @@ class mpCmd(dict):
 # where F_j(M_i) = B[i][j]
 # default is by cols of F and rows of M
 # M must be transposed beforehand for other method
-def operate(map_commad, data_matrix):
+def operate(map_command, data_matrix):
     x_range = range(max(map_command.keys()) + 1)
     y_range = range(len(data_matrix[0]))
     # preallocate because some columns could be skipped
@@ -229,7 +233,7 @@ def xlmp(cmd, map_by_col=True, f_book='', t_book='', f_sheet=0, t_sheet='xlmp',
          from_ranges={}, to_point={}):
     xl_interface = _ExcelInterface(read_by_row=map_by_col)
     data_matrix = xl_interface.guess_read(f_book, f_sheet, **from_ranges)
-    mapped_matrix = cmd.operate(data_matrix)
+    mapped_matrix = operate(cmd, data_matrix)
     xl_interface.guess_write(mapped_matrix, t_book, t_sheet, **to_point)
 
 
@@ -250,6 +254,6 @@ def xlsmp(sub_cmd, grp_func, grp_by_col=True, f_book='', t_book='',
     data_matrix = xl_interface.guess_read(f_book, f_sheet, **from_ranges)
     block_matrix = grp_func(data_matrix, **grp_func_kwargs)
     # map each block then merge the mapped_blocks
-    mapped_matrix = zip([sub_cmd.operate(zip(*block))
+    mapped_matrix = zip([operate(cmd, zip(*block))
                          for block in block_matrix])
     xl_interface.guess_write(mapped_matrix, t_book, t_sheet, **to_point)
