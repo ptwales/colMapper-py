@@ -170,9 +170,9 @@ class mpCmd(dict):
     """Stores user defined maps and performs the map operations
     """
 
-    def __init__(self, map_dict, off_set=0, 
+    def __init__(self, map_dict, offset=0, 
                  int_is_index=True, str_is_name=False):
-        self.__offset = off_set
+        self.offset = off_set
         self.int_is_index = int_is_index
         self.str_is_name = str_is_name
         # just call __setitem__ and be done with it
@@ -188,7 +188,7 @@ class mpCmd(dict):
 
     def __convert_val(self, val):
         if isinstance(val, int) and self.int_is_index:
-            index = val - self.__offset
+            index = val - self.offset
             return (lambda row, index=index: row[index])
         elif isinstance(val, str) and self.str_is_name:
             index = self.__name_to_index(val)
@@ -203,7 +203,7 @@ class mpCmd(dict):
         if isinstance(key, str):
             return self.__name_to_index(key)
         elif isinstance(key, int):
-            return key - self.__offset
+            return key - self.offset
         else:
             raise TypeError
 
