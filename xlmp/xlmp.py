@@ -166,6 +166,11 @@ class _ExcelInterface(object):
             self.write_book(data_matrix, book_path, sheet, **kw_to_point)
 
 
+def rmap(func, sequence):
+    return [rmap(func, i) if isinstance(i, collections.Sequence) 
+            else func(i) for i in sequence]
+    
+    
 class mpCmd(dict):
     """Stores user defined maps and performs the map operations
     """
@@ -193,9 +198,13 @@ class mpCmd(dict):
         elif isinstance(val, str) and self.str_is_name:
             index = self.__name_to_index(val)
             return (lambda row, index=index: row[index])
+        
+        # will not work if indexes are passed
         elif callable(val):
             # TODO: index Param Passing, ASAP
-            return val
+            # PYTHON 3
+            func, *indexes = val
+            return (lambda args: func(*rmap((lambda i: args[i]), indexes)))
         else:
             return (lambda *args **kwargs: val)
 
