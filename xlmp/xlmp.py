@@ -1,6 +1,7 @@
 import xlrd
 import xlwt
 from itertools import groupby
+import collections
 
 __all__ = ['xlmp', 'mpCmd', 'group_by_ids', '_ExcelInterface']  # , 'xlSmp']
 
@@ -167,8 +168,10 @@ class _ExcelInterface(object):
 
 
 def rmap(func, sequence):
-    return [rmap(func, i) if isinstance(i, collections.Sequence) 
-            else func(i) for i in sequence]
+    return [rmap(func, i) if isinstance(i, (tuple, list))
+            #elif isinstance(i, dict) ???
+            else func(i) 
+            for i in sequence]
     
     
 class mpCmd(dict):
@@ -177,7 +180,7 @@ class mpCmd(dict):
 
     def __init__(self, map_dict, offset=0, 
                  int_is_index=True, str_is_name=False):
-        self.offset = off_set
+        self.offset = offset
         self.int_is_index = int_is_index
         self.str_is_name = str_is_name
         # just call __setitem__ and be done with it
@@ -200,13 +203,12 @@ class mpCmd(dict):
             return (lambda row, index=index: row[index])
         
         # will not work if indexes are passed
-        elif callable(val):
+        elif isinstance(val, (tuple, list)):
             # TODO: index Param Passing, ASAP
-            # PYTHON 3
-            func, *indexes = val
+            func, indexes = val
             return (lambda args: func(*rmap((lambda i: args[i]), indexes)))
         else:
-            return (lambda *args **kwargs: val)
+            return (lambda *args, **kwargs: val)
 
     def __convert_key(self, key):
         if isinstance(key, str):

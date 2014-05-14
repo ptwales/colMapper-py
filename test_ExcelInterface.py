@@ -9,9 +9,9 @@ DEFAULT_RANGE = list(range(0, DEFAULT_LIMIT))
 XL_EXTS = ['.xls', '.xlsx']  # , '.ods'] ods not supported...
 TEST_NAME = 'test'
 TEST_BOOKS = [TEST_NAME + exts for exts in XL_EXTS]
-TEST_MATRIX = [[unicode(string.uppercase[c] + str(r + 1), 'utf8')
+TEST_MATRIX = [[unicode(string.ascii_uppercase[c] + str(r + 1), 'utf8')
                 for c in DEFAULT_RANGE] for r in DEFAULT_RANGE]
-TRANSPOSED = [[unicode(string.uppercase[c] + str(r + 1), 'utf8')
+TRANSPOSED = [[unicode(string.ascii_uppercase[c] + str(r + 1), 'utf8')
                for r in DEFAULT_RANGE] for c in DEFAULT_RANGE]
 C0, CF, R0, RF = 3, 15, 5, 20
 SUB_MATRIX = [row[3:15] for row in TEST_MATRIX[5:20]]

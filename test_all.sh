@@ -3,5 +3,5 @@
 for test in *test_*.py
 do 
   echo "Running $test"
-  python $test
+  python2 $test
 done

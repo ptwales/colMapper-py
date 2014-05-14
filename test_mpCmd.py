@@ -5,11 +5,11 @@ import string
 
 DEFAULT_LIMIT = 26
 DEFAULT_RANGE = range(0, DEFAULT_LIMIT)
-TEST_MATRIX = [[string.uppercase[c] + str(r + 1)
+TEST_MATRIX = [[string.ascii_uppercase[c] + str(r + 1)
                 for c in DEFAULT_RANGE] for r in DEFAULT_RANGE]
 
 i_INDEX_COMMAND = {i: i for i in DEFAULT_RANGE}
-i_NAME_COMMAND = {string.uppercase[i]: i for i in DEFAULT_RANGE}
+i_NAME_COMMAND = {string.ascii_uppercase[i]: i for i in DEFAULT_RANGE}
 i_OFFSET_COMMAND = {i + 1: i + 1 for i in DEFAULT_RANGE}
 
 o_INDEX_COMMAND = {i: (lambda row, i=i: row[i]) for i in DEFAULT_RANGE}
@@ -26,7 +26,7 @@ class TestmpCmd(unittest.TestCase):
         self.assertEqual(test_cmd.keys(), o_INDEX_COMMAND.keys())
 
     def test_index_key_offset(self):
-        test_cmd = xlmp.mpCmd(i_OFFSET_COMMAND, off_set=1)
+        test_cmd = xlmp.mpCmd(i_OFFSET_COMMAND, offset=1)
         self.assertEqual(test_cmd.keys(), o_INDEX_COMMAND.keys())
 
     def test_name_replace(self):
@@ -34,12 +34,13 @@ class TestmpCmd(unittest.TestCase):
         self.assertEqual(test_cmd.keys(), o_INDEX_COMMAND.keys())
 
     def test_name_offset(self):
-        test_cmd = xlmp.mpCmd(i_NAME_COMMAND, off_set=1)
+        test_cmd = xlmp.mpCmd(i_NAME_COMMAND, offset=1)
         self.assertEqual(test_cmd.keys(), o_INDEX_COMMAND.keys())
 
     def test_invalid_key(self):
         with self.assertRaises(TypeError):
             test_cmd = xlmp.mpCmd({[1, 2, 3]: 4})
+            test_cmd = xlmp.mpCmd({2.0: 4})
 
     def test_index_val_replace(self):
         test_cmd = xlmp.mpCmd(i_INDEX_COMMAND)
