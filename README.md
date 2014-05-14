@@ -10,6 +10,8 @@ With the exception of sub-mapping, where xlmp partitions the data set along one 
 Usage
 -----
 
+**OUT OF DATE**
+
 Mapping is done by defining an _xlmp.mpCmd_ object,
 
     import xlmp
@@ -49,11 +51,11 @@ The list of indexes will specify values of which cells on that row or column to 
     mapCommand = xlmp.mpCmd({'A': (Sum, [0, 3, 4])})
 
 will map 'A' = Sum('A','D','E'), ergo 'A1' = Sum('A1', 'D1', 'E1'), if mapping by columns.
-Functions can be nested by replacing one of the list items with a similar tuple like so,
+~~Functions can be nested by replacing one of the list items with a similar tuple like so,~~
 
-    mapCommand = xlmp.mpCmd({'A': (Sum, [0, (mpfunc.mapCond, [3, 'AAA', 4, 3]), 4])})
+~~mapCommand = xlmp.mpCmd({'A': (Sum, [0, (mpfunc.mapCond, [3, 'AAA', 4, 3]), 4])})~~
 
-This feature may become depreciated so it is best to handle such cases with an external definition.
+~~This feature may become depreciated so it is best to handle such cases with an external definition.~~ _Has been removed_
 Remember that `'AAA'` will evaluate to itself and not the column name.
 Also _mpfunc.py_ defines some useful functions that may be needed often.
 
