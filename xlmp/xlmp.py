@@ -172,7 +172,12 @@ def rmap(func, sequence):
             #elif isinstance(i, dict) ???
             else func(i) 
             for i in sequence]
+
     
+def name_to_index(col_name):
+    return reduce((lambda index, char: index*26 + int(char, 36) - 9),
+                  col_name, 0) - 1
+
     
 class mpCmd(dict):
     """Stores user defined maps and performs the map operations
@@ -187,40 +192,40 @@ class mpCmd(dict):
         for k in map_dict.keys():
             self[k] = map_dict[k]
 
+    # TODO: Guard other entry points, add, iadd etc
     def __setitem__(self, key, val):
-        key, val = self.__convert_item(key, val)
-        super(mpCmd, self).__setitem__(key, val)
+        super(mpCmd, self).__setitem__(*self.__convert_item(key, val))
 
     def __convert_item(self, key, val):
         return self.__convert_key(key), self.__convert_val(val)
 
     def __convert_val(self, val):
+
         if isinstance(val, int) and self.int_is_index:
-            index = val - self.offset
-            return (lambda row, index=index: row[index])
+
+            return (lambda row, index= val - self.offset: row[index])
+
         elif isinstance(val, str) and self.str_is_name:
-            index = self.__name_to_index(val)
-            return (lambda row, index=index: row[index])
-        
-        # will not work if indexes are passed
+
+            return (lambda row, index=name_to_index(val): row[index])
+
         elif isinstance(val, (tuple, list)):
-            # TODO: index Param Passing, ASAP
+
             func, indexes = val
+            indexes = rmap(self.__convert_key, indexes)
             return (lambda row: func(*rmap((lambda i: row[i]), indexes)))
+
         else:
             return (lambda *args, **kwargs: val)
 
     def __convert_key(self, key):
         if isinstance(key, str):
-            return self.__name_to_index(key)
+            return name_to_index(key)
         elif isinstance(key, int):
             return key - self.offset
         else:
             raise TypeError
 
-    def __name_to_index(self, col_name):
-        return reduce((lambda index, char: index*26 + int(char, 36) - 9),
-                      col_name, 0) - 1
 
 # performs [M].[F] = B
 # where F_j(M_i) = B[i][j]
