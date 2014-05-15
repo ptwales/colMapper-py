@@ -206,7 +206,7 @@ class mpCmd(dict):
         elif isinstance(val, (tuple, list)):
             # TODO: index Param Passing, ASAP
             func, indexes = val
-            return (lambda args: func(*rmap((lambda i: args[i]), indexes)))
+            return (lambda row: func(*rmap((lambda i: row[i]), indexes)))
         else:
             return (lambda *args, **kwargs: val)
 
