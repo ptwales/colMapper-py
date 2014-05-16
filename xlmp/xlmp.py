@@ -180,7 +180,9 @@ def name_to_index(col_name):
 
     
 class mpCmd(dict):
-    """Stores user defined maps and performs the map operations
+    """Stores user defined maps and converts them to f(vector) = scalar
+    
+    Every item stored in mpCmd will be converted to int: (lambda row: some_func)
     """
 
     def __init__(self, map_dict, offset=0, 
@@ -188,33 +190,34 @@ class mpCmd(dict):
         self.offset = offset
         self.int_is_index = int_is_index
         self.str_is_name = str_is_name
-        # just call __setitem__ and be done with it
-        for k in map_dict.keys():
-            self[k] = map_dict[k]
+        super(mpCmd, self).__init__(self.__convert_dict(map_dict))
 
-    # TODO: Guard other entry points, add, iadd etc
+    # Override setters, do no override accessors
     def __setitem__(self, key, val):
         super(mpCmd, self).__setitem__(*self.__convert_item(key, val))
 
+    def update(self, other):
+        super(mpCmd, self).update({self.__convert_dict(other))
+                                 
+    # Macro functions
+    def __convert_dict(self, other):
+        return {self.__convert_key(key): self.__convert_val(val)
+                    for key, val in map_dict.iterItems()}    
+                    
     def __convert_item(self, key, val):
         return self.__convert_key(key), self.__convert_val(val)
 
+    # actual replacement
     def __convert_val(self, val):
-
-        if isinstance(val, int) and self.int_is_index:
-
-            return (lambda row, index= val - self.offset: row[index])
-
-        elif isinstance(val, str) and self.str_is_name:
-
-            return (lambda row, index=name_to_index(val): row[index])
-
+        if (isinstance(val, int) and self.int_is_index
+                or isinstance(val, str) and self.str_is_name):
+            return (lambda row, index=self.__convert_key(val): row[index])
+            
         elif isinstance(val, (tuple, list)):
-
             func, indexes = val
             indexes = rmap(self.__convert_key, indexes)
             return (lambda row: func(*rmap((lambda i: row[i]), indexes)))
-
+            
         else:
             return (lambda *args, **kwargs: val)
 
