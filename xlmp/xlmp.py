@@ -197,12 +197,12 @@ class mpCmd(dict):
         super(mpCmd, self).__setitem__(*self.__convert_item(key, val))
 
     def update(self, other):
-        super(mpCmd, self).update({self.__convert_dict(other))
+        super(mpCmd, self).update(self.__convert_dict(other))
                                  
     # Macro functions
     def __convert_dict(self, other):
         return {self.__convert_key(key): self.__convert_val(val)
-                    for key, val in map_dict.iterItems()}    
+                    for key, val in other.items()}    
                     
     def __convert_item(self, key, val):
         return self.__convert_key(key), self.__convert_val(val)
