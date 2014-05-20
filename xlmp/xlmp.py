@@ -248,7 +248,7 @@ def operate(map_command, data_matrix):
 
 # xlmp should not need to know the kwargs of guess_read and
 # guess_write
-def xlmp(cmd, map_by_col=True, f_book='', t_book='', f_sheet=0, t_sheet='xlmp',
+def line_mapping(cmd, map_by_col=True, f_book='', t_book='', f_sheet=0, t_sheet='xlmp',
          from_ranges={}, to_point={}):
     xl_interface = _ExcelInterface(read_by_row=map_by_col)
     data_matrix = xl_interface.guess_read(f_book, f_sheet, **from_ranges)
@@ -266,7 +266,7 @@ def group_by_ids(data_matrix, id_indexes):
 
 
 # Still mock up
-def xlsmp(sub_cmd, grp_func, grp_by_col=True, f_book='', t_book='',
+def block_mapping(sub_cmd, grp_func, grp_by_col=True, f_book='', t_book='',
           f_sheet=0, t_sheet='xlmp', from_ranges={}, to_point={},
           grp_func_kwargs={}):
     xl_interface = _ExcelInterface(read_by_row=grp_by_col)
@@ -276,3 +276,15 @@ def xlsmp(sub_cmd, grp_func, grp_by_col=True, f_book='', t_book='',
     mapped_matrix = zip([operate(cmd, zip(*block))
                          for block in block_matrix])
     xl_interface.guess_write(mapped_matrix, t_book, t_sheet, **to_point)
+
+#if __name__ == '__main__':
+#    argv = sys.argv[1:]
+#    parser = potparse.OptionParser(
+#    parser.add_option
+#    settings, args = parser.parse_args(argv)
+#    if <invalid>:
+#        parser.error(
+#    line_mapping
+    
+    
+    
