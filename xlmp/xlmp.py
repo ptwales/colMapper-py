@@ -215,6 +215,7 @@ class mpCmd(dict):
             
         elif isinstance(val, (tuple, list)):
             func, indexes = val
+            assert callable(func)
             indexes = rmap(self._convert_key, indexes)
             return (lambda row: func(*rmap((lambda i: row[i]), indexes)))
             
