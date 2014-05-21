@@ -175,6 +175,12 @@ def rmap(func, sequence):
 
     
 def name_to_index(col_name):
+    # name_to_index('') = -1. xlwt will throw an error but that will
+    # occur too far down the line.  Catch it now.
+    if not col_name:
+        raise TypeError("Null column names are not allowed") 
+    # if len(col_name) > 3:
+    #   raise TypeError("{} is too long to be a column name".format(col_name))
     return reduce((lambda index, char: index*26 + int(char, 36) - 9),
                   col_name, 0) - 1
 
@@ -209,13 +215,15 @@ class mpCmd(dict):
 
     # actual replacement
     def _convert_val(self, val):
-        if (isinstance(val, int) and self.int_is_index
-                or isinstance(val, str) and self.str_is_name):
+        
+        if (isinstance(val, int) and self.int_is_index) or
+                (isinstance(val, str) and self.str_is_name):
             return (lambda row, index=self._convert_key(val): row[index])
             
         elif isinstance(val, (tuple, list)):
             func, indexes = val
-            assert callable(func)
+            if not callable(func):
+                raise TypeError("{} is not callable.".format(func))
             indexes = rmap(self._convert_key, indexes)
             return (lambda row: func(*rmap((lambda i: row[i]), indexes)))
             
@@ -228,7 +236,7 @@ class mpCmd(dict):
         elif isinstance(key, int):
             return key - self.offset
         else:
-            raise TypeError
+            raise TypeError("{} is an invalid index; it is not type str or int.".format(key))
 
 
 # performs [M].[F] = B
