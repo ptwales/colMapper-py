@@ -3,7 +3,7 @@ import xlwt
 from itertools import groupby
 import collections
 
-__all__ = ['xlmp', 'mpCmd', 'group_by_ids', '_ExcelInterface']  # , 'xlSmp']
+__all__ = [ 'line_mapping', 'mpCmd', 'group_by_ids', '_ExcelInterface']  # , 'xlSmp']
 
 
 class _ExcelInterface(object):
@@ -216,8 +216,8 @@ class mpCmd(dict):
     # actual replacement
     def _convert_val(self, val):
         
-        if (isinstance(val, int) and self.int_is_index) or
-                (isinstance(val, str) and self.str_is_name):
+        if ((isinstance(val, int) and self.int_is_index) or
+                (isinstance(val, str) and self.str_is_name)):
             return (lambda row, index=self._convert_key(val): row[index])
             
         elif isinstance(val, (tuple, list)):
