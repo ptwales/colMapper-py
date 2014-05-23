@@ -78,7 +78,7 @@ class TestExcelInterface(unittest.TestCase):
                 self.xl_interface.read_book(book, 0, r0=R0, rf=RF, c0=C0, cf=CF)
                 )
 
-    def test_guess_read(self): 
+    def test_guess_read(self):
         for book in TEST_BOOKS:
             self.assertEqual(TEST_MATRIX,
                 self.xl_interface.guess_read(
@@ -104,7 +104,7 @@ class TestExcelInterface(unittest.TestCase):
         sheet = book.add_sheet('xlmp')
         self.xl_interface.write_sheet(TEST_MATRIX, sheet)
         book.save("write_trans_" + book_path)
-            
+
     #def test_write_book(self):
     #def test_guess_write(self):
 

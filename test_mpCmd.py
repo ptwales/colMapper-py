@@ -18,6 +18,10 @@ o_INDEX_COMMAND = {i: (lambda row, i=i: row[i]) for i in DEFAULT_RANGE}
 TEST_ROW = TEST_MATRIX[15]
 TEST_STRING = "THISISANEXPARROT"
 TEST_INT_ROW = [1, -1600, 4999, -5000, 4000]
+PARROT_INDEXES = [19, 7, 8, 18,
+                  8, 18, 0, 13,
+                  4, 23,
+                  15, 0, 17, 17, 14, 19]
 
 
 class TestmpCmd(unittest.TestCase):
@@ -53,7 +57,7 @@ class TestmpCmd(unittest.TestCase):
             cmd = xlmp.mpCmd({[1, 2, 3]: 4})
             cmd = xlmp.mpCmd({2.0: 4})
 
-    # 
+    #
     # VAL TESTING
     #
     # index -> (lambda row: row[index])
@@ -80,22 +84,22 @@ class TestmpCmd(unittest.TestCase):
         self.assertEqual(cmd[0](TEST_ROW), TEST_STRING)
         self.assertEqual(cmd[1](TEST_ROW), 1)
 
-
     # (func, (indexes)) -> (lambda row: func(*rmap((lambda i: row[i]), indexes)
     def test_func_val_replace(self):
         cmd = xlmp.mpCmd({
             0: (sum, ([0, 2, 4], 0)),
-            1: (''.join, [[19,7,8,18,8,18,0,13,4,23,15,0,17,17,14,19]])
-            }, int_is_index=True) 
+            1: (''.join, [PARROT_INDEXES])
+            }, int_is_index=True)
         self.assertEqual(cmd[0](TEST_INT_ROW), 9001)
         self.assertEqual(cmd[1](string.ascii_uppercase), TEST_STRING)
 
-    # (func, (offset_indexes)) -> (lambda row: func(*rmap((lambda i: row[i], indexes)
+    # (func, (offset_indexes)) ->
+    #    (lambda row: func(*rmap((lambda i: row[i], indexes)
     def test_func_val_offset(self):
         cmd = xlmp.mpCmd({
             'A': (sum, ([1, 3, 5], 1)),
-            'B': (''.join, [[20,8,9,19,9,19,1,14,5,24,16,1,18,18,15,20]])
-            }, int_is_index=True, offset=1) 
+            'B': (''.join, [PARROT_INDEXES])
+            }, int_is_index=True, offset=1)
         self.assertEqual(cmd[0](TEST_INT_ROW), 9001)
         self.assertEqual(cmd[1](string.ascii_uppercase), TEST_STRING)
 
@@ -104,7 +108,7 @@ class TestmpCmd(unittest.TestCase):
         cmd = xlmp.mpCmd({
             0: (sum, (['A', 'C', 'E'], 'A')),
             1: (''.join, [[letter for letter in TEST_STRING]])
-            }, int_is_index=True) 
+            }, int_is_index=True)
         self.assertEqual(cmd[0](TEST_INT_ROW), 9001)
         self.assertEqual(cmd[1](string.ascii_uppercase), TEST_STRING)
 
