@@ -114,6 +114,7 @@ class TestExcelInterface(unittest.TestCase):
     #def test_write_book(self):
     #def test_guess_write(self):
 
+
 i_INDEX_COMMAND = {i: i for i in DEFAULT_RANGE}
 i_NAME_KEY_COMMAND = {string.ascii_uppercase[i]: i for i in DEFAULT_RANGE}
 i_NAME_VAL_COMMAND = {i: string.ascii_uppercase[i] for i in DEFAULT_RANGE}
@@ -217,8 +218,10 @@ class TestmpCmd(unittest.TestCase):
         self.assertEqual(cmd[0](TEST_INT_ROW), 9001)
         self.assertEqual(cmd[1](string.ascii_uppercase), TEST_STRING)
 
-    # entry point testing
-    #  __ini__ already tested
+    #
+    # ENTRY POINT TESTING
+    #
+    #  __init__ already tested
     #  __setitem__
     def test_setitem(self):
         cmd = xlmp.mpCmd({}, int_is_index=True, offset=1)
@@ -234,6 +237,14 @@ class TestmpCmd(unittest.TestCase):
         self.assertEqual(cmd[0](TEST_ROW), TEST_ROW[0])
         self.assertEqual(cmd[1](TEST_ROW), TEST_ROW[0])
 
+
+class TestMapping(unittest.TestCase):
+
+
+    def test_operate_identical(self):
+        cmd = xlmp.mpCmd(i_INDEX_COMMAND)
+        self.assertEqual(xlmp._command_operate(cmd, TEST_MATRIX), TEST_MATRIX)
+    
 
 if __name__ == '__main__':
     unittest.main()
