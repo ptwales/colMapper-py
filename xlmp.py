@@ -3,9 +3,6 @@ import xlwt
 from itertools import groupby
 import collections
 
-__all__ = ['line_mapping', 'mpCmd', 'group_by_ids', '_ExcelInterface',
-           '_command_operate']
-
 
 class _ExcelInterface(object):
     """xlmp's interface to the xlrd and xlwt modules.
