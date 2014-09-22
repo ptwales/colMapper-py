@@ -8,7 +8,7 @@ class ISheetIO(object):
         raise NotImplementedError("read_sheet not implemented")
     
     def write_sheet(self):
-        pass NotImplementedError("write_sheet not implemented")
+        raise NotImplementedError("write_sheet not implemented")
     
     
     
