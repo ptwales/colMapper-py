@@ -27,7 +27,7 @@ class mpCmd(dict):
     """
 
     def __init__(self, map_dict, offset=0,
-                 int_is_index=True, str_is_name=False):
+            int_is_index=True, str_is_name=False):
         self.offset = offset
         self.int_is_index = int_is_index
         self.str_is_name = str_is_name
@@ -81,22 +81,19 @@ class mpCmd(dict):
 # default is by cols of F and rows of M
 # M must be transposed beforehand for other method
 def _command_operate(map_command, data_matrix):
+    
     x_range = range(max(map_command.keys()) + 1)
     y_range = range(len(data_matrix[0]))
+    
     # preallocate because some columns could be skipped
     resultant_matrix = [[None for i in x_range] for j in y_range]
     assert len(x_range) == len(data_matrix)
+    
     for i, row in enumerate(data_matrix):
         for k in map_command.keys():
             resultant_matrix[i][k] = map_command[k](row)
+            
     return resultant_matrix
-
-
-# xlmp should not need to know the kwargs of guess_read and
-# guess_write
-def line_mapping(cmd, sheet_io):
-    sheet_io.write_sheet(_command_operate(cmd,  sheet_io.read_sheet))
-
 
 def group_by_ids(data_matrix, id_indexes):
 
@@ -106,12 +103,27 @@ def group_by_ids(data_matrix, id_indexes):
     data_matrix.sort(key=id_indexes)
     return [list(g) for k, g in groupby(data_matrix, id_func)]
 
+# Wrapper functions
 
-def block_mapping(sub_cmd, grp_func, sheet_io, grp_func_kwargs={}):
-    data_matrix = sheet_io.read_sheet
+def line_mapping(line_map, in_sheet, out_sheet, map_by_row=True, 
+        read_kwargs={}, write_kwargs={}):
+    
+    sheet_io = SheetIO(map_by_row)
+    data_matrix = sheet_io.read_sheet(in_sheet, **read_kwargs)
+    result_matrix = _command_operate(line_map, data_matrix)
+    sheet_io.write_sheet(out_sheet, **write_kwargs)
+
+
+def block_mapping(block_map, in_sheet, out_sheet, grp_func, grp_func_kwargs={},
+        grp_by_col=True, read_kwargs={}, write_kwargs={}):
+    
+    sheet_io = SheetIO(by_row)
+    data_matrix = sheet_io.read_sheet(in_sheet, **read_kwargs)
+    
     block_matrix = grp_func(data_matrix, **grp_func_kwargs)
     # map each block then merge the mapped_blocks
-    mapped_matrix = zip([_command_operate(cmd, zip(*block))
-                         for block in block_matrix])
-    sheet_io.write_sheet(mapped_matrix)
+    mapped_matrix = zip([_command_operate(block_map, zip(*block))
+                        for block in block_matrix])
+    
+    sheet_io.write_sheet(mapped_matrix, **write_kwargs)
 
