@@ -31,17 +31,17 @@ class SheetIO(ISheetIO):
         return self.orient_data(data)
     
     def write_sheet(self, data, sheet, **kwargs):
-        oriented_data = self.orient_data(data)
+        oriented_data = self._orient_data(data)
         self._factory(sheet).write_sheet(sheet, oriented_data, **kwargs)
     
-    def orient_data(self, data_matrix):
+    def _orient_data(self, data):
         if self.by_row:
-            return data_matrix
+            return data
         else:
-            return self._transpose(data_matrix) 
+            return self._transpose(data) 
   
-    def _transpose(self, data_matrix):
-        return zip(*data_matrix)
+    def _transpose(self, matrix):
+        return zip(*matrix)
 
 
 
