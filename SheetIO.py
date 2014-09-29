@@ -47,7 +47,8 @@ class SheetIO(ISheetIO):
 
 class ExcelSheet(ISheetIO):
 
-    def read_sheet(self, sheet, col_start=0, row_start=0, col_cnt=-1, row_cnt=-1):
+    def read_sheet(self, sheet,
+            col_start=0, row_start=0, col_cnt=-1, row_cnt=-1):
         
         # TODO: Raise an error instead. Research which error to raise
         assert not sheet.ragged_rows
@@ -65,5 +66,25 @@ class ExcelSheet(ISheetIO):
             for c, el in enumerate(row):
                 sheet.write(row_start + r, col_start + c, el)
 
-# class CSVSheet(ISheetIO):
+
+
+class CsvSheet(ISheetIO):
+
+    def read_sheet(self, read_path, 
+            col_start=0, row_start=0, col_cnt=-1, row_cnt=-1):
+        with open(read_path, 'rb') as csv_file:
+            dialect = csv.Sniffer().sniff(csv_file.readline())
+            csv_file.seek(0)
+            csv_reader = csv.reader(csvfile, dialect))
+            data = [row[col_start:col_cnt] for row in 
+                    csv_reader][row_start:row_cnt]
+        return data
+
+    def write_sheet(self, data, write_path, **kwargs):
+        with open(write_path, 'wb') as csv_file:
+            csv_writer = csv.writer(csv_file, **kwargs)
+            csv_writer.writerows(data)
+
+
+
 # class OpenXMLSheet(ISheetIO):
