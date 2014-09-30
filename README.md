@@ -8,9 +8,10 @@ This means that the number of rows or columns in equal the number of rows or col
 With the exception of sub-mapping, where xlmp partitions the data set along one axis and then maps each sub-set along the other axis.
 
 
-### xlmp.mpCmd
+Defining Transformations
+------------------------
 
-#### Indexes
+### Indexes
 
 A simple map that reorders the a sheet would look like,
 
@@ -22,7 +23,7 @@ Note that column names are case insensitive and can be used for origins but not 
 Furthermore, the optional _offset_ parameter can be set to control the offset of indexes but not names.
 'A' &#x2194; 'A' regardless of _offset_.
 
-#### Functions
+### Functions
 
 To map a new value as a function of other values, pass a function and a list of indexes instead of just an index.
 The list of indexes will specify values of which cells on that row or column to pass to that function.
@@ -30,14 +31,6 @@ The list of indexes will specify values of which cells on that row or column to 
     mapCommand = xlmp.mpCmd({'A': (Sum, [0, 3, 4])})
 
 will map 'A' = Sum('A','D','E'), ergo 'A1' = Sum('A1', 'D1', 'E1'), if mapping by columns.
-
-
-Dependencies
-------------
-
-- Python [xlrd module](https://github.com/python-excel/xlrd)
-- Python [xlwt module](https://github.com/python-excel/xlwt)
-- Python 2.3 - 2.7 (As needed by above)
 
 License
 -------
