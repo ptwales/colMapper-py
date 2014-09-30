@@ -70,20 +70,13 @@ class ExcelSheet(ISheetIO):
 
 class CsvSheet(ISheetIO):
 
-    def read_sheet(self, read_path, 
+    def read_sheet(self, csv_reader, 
             col_start=0, row_start=0, col_cnt=-1, row_cnt=-1):
-        with open(read_path, 'rb') as csv_file:
-            dialect = csv.Sniffer().sniff(csv_file.readline())
-            csv_file.seek(0)
-            csv_reader = csv.reader(csvfile, dialect))
-            data = [row[col_start:col_cnt] for row in 
-                    csv_reader][row_start:row_cnt]
-        return data
+        return [row[col_start:col_cnt] for row in 
+                csv_reader][row_start:row_cnt]
 
-    def write_sheet(self, data, write_path, **kwargs):
-        with open(write_path, 'wb') as csv_file:
-            csv_writer = csv.writer(csv_file, **kwargs)
-            csv_writer.writerows(data)
+    def write_sheet(self, data, csv_writer):
+        csv_writer.writerows(data)
 
 
 
