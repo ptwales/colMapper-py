@@ -1,5 +1,5 @@
 from itertools import groupby
-
+from .SheetIO import SheetIO
 
 # performs [M].[F] = B
 # where F_j(M_i) = B[i][j]
