@@ -1,1 +1,1 @@
-__all__ = ['mapping.py', 'mapCmd.py']
+from .mapCmd import mapCmd
