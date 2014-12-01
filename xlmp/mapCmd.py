@@ -1,3 +1,4 @@
+from functools import reduce
 
 def rmap(func, sequence):
     return [rmap(func, i) if isinstance(i, (tuple, list))

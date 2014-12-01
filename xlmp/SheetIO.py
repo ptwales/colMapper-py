@@ -19,6 +19,9 @@ def factory_create_sheet(sheet):
         raise TypeError("Unknown Sheet type or not a sheet")
 
 
+def transpose(matrix):
+    return zip(*matrix)
+
 
 class UniversalSheetIO(object):
     """ Universal Reader that implements factory method and
@@ -39,10 +42,7 @@ class UniversalSheetIO(object):
         if self.by_row:
             return data
         else:
-            return self._transpose(data) 
-  
-    def _transpose(self, matrix):
-        return zip(*matrix)
+            return transpose(data)
 
 
 
