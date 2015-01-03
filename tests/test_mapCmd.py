@@ -7,8 +7,8 @@ class TestFloatingFuncs(unittest.TestCase):
 
     def test_rmap(self):
         self.assertEqual(mapCmd.rmap(lambda x: x, []), [])
-        x = mapCmd.rmap((lambda x: 1 + x),  [1, (2, 3), [4, (5, 6)]])
-        self.assertEqual(x, [2, [3, 4], [5, [6, 7]]])
+        result = mapCmd.rmap((lambda x: 1 + x),  [1, (2, 3), [4, (5, 6)]])
+        self.assertEqual(result, [2, [3, 4], [5, [6, 7]]])
     
     def test_name_to_index(self):
         self.assertEqual(mapCmd.name_to_index('A'), 0)
@@ -23,25 +23,26 @@ class TestMapCmdKey(unittest.TestCase):
     # index -> index
     def test_index_key(self):
         cmd = mapCmd.mapCmd({0: 0})
-        self.assertEqual(cmd[0](['a']), 'a')
+        self.assertEqual([0], list(cmd))
 
     # index -> index - offset
     def test_index_key_offset(self):
         cmd = mapCmd.mapCmd({1: 1}, offset=1)
-        self.assertEqual(cmd[0](['a']), 'a')
+        self.assertEqual([0], list(cmd))
 
     # name -> index
     def test_name_key_replace(self):
         cmd = mapCmd.mapCmd({'A': 0, 1: 'B'}, str_is_name=True)
-        self.assertEqual(cmd[0](['a', 'b']), 'a')
-        self.assertEqual(cmd[1](['a', 'b']), 'b')
+        self.assertEqual([0, 1], list(cmd))
         
     # there is no name offset
     # name -> index
     def test_name_key_offset(self):
-        cmd = mapCmd.mapCmd({'A': 1, 2: 'B'}, str_is_name=True, offset=1)
-        self.assertEqual(cmd[0](['a', 'b']), 'a')
-        self.assertEqual(cmd[1](['a', 'b']), 'b')
+        cmd = mapCmd.mapCmd({'A': 1, 2: 'B'}, 
+                            str_is_name=True,
+                            offset=1)
+        self.assertEqual([0, 1], list(cmd))
+        
 
     # keys can only be int or str
     def test_invalid_key(self):
@@ -54,19 +55,30 @@ class TestMapCmdValue(unittest.TestCase):
     
     # index -> (lambda row: row[index])
     def test_index_val_replace(self):
-        pass
+        cmd = mapCmd.mapCmd({0: 0})
+        self.assertEqual(cmd[0](['x']), 'x')
 
     # name -> (lambda row: row[index])
     def test_name_val_replace(self):
-        pass
+        cmd = mapCmd.mapCmd({'a': 0})
+        self.assertEqual(cmd[0](['x']), 'x')
 
     # val -> (lambda *args, **kwargs: val)
     def test_value_val_replace(self):
-        pass
+        cmd = mapCmd.mapCmd({0: 'spam'})
+        self.assertEqual(cmd[0](['x']), 'spam')
 
     # (func, (indexes)) -> (lambda row: func(*rmap((lambda i: row[i]), indexes)
     def test_func_val_replace(self):
-        pass
+
+        argless = mapCmd.mapCmd({0: (lambda: 'spam')})
+        self.assertEqual(argless[0](['x']), 'spam')
+
+        arged = mapCmd.mapCmd({0: ((lambda x: 'spam'), 0)})
+        self.assertEqual(arged[0](['x']), 'spam')
+
+        cmd = mapCmd.mapCmd({0: ((lambda x: x + 2), 0)})
+        self.assertEqual(cmd[0]([2]), 4)
 
     # (func, (offset_indexes)) ->
     #    (lambda row: func(*rmap((lambda i: row[i], indexes)
