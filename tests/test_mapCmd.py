@@ -71,28 +71,31 @@ class TestMapCmdValue(unittest.TestCase):
     # (func, (indexes)) -> (lambda row: func(*rmap((lambda i: row[i]), indexes)
     def test_func_val_replace(self):
 
-        argless = mapCmd.mapCmd({0: (lambda: 'spam')})
+        argless = mapCmd.mapCmd({0: (lambda: 'spam', [])}, offset=0)
         self.assertEqual(argless[0](['x']), 'spam')
 
-        arged = mapCmd.mapCmd({0: ((lambda x: 'spam'), 0)})
+        arged = mapCmd.mapCmd({0: ((lambda x: 'spam'), [0])})
         self.assertEqual(arged[0](['x']), 'spam')
 
-        cmd = mapCmd.mapCmd({0: ((lambda x: x + 2), 0)})
+        cmd = mapCmd.mapCmd({0: ((lambda x: x + 2), [0])})
         self.assertEqual(cmd[0]([2]), 4)
 
     # (func, (offset_indexes)) ->
     #    (lambda row: func(*rmap((lambda i: row[i], indexes)
-    def test_func_val_offset(self):
-        pass
+    def test_func_val_offset(self): 
+        cmd = mapCmd.mapCmd({1: ((lambda x: x + 2), [2])}, offset=1)
+        self.assertEqual(cmd[0]([1,2,3,4]), 4)
 
     # (func, (names)) -> (lambda row: func(*rmap((lambda i: row[i], indexes)
     def test_func_val_names(self):
-        pass
+        cmd = mapCmd.mapCmd({'A': ((lambda x: x + 2), ['B'])}, str_is_name=True)
+        self.assertEqual(cmd[0]([1,2,3,4]), 4)
+
 
 
 
 class TestMapCmdEntryPoints(unittest.TestCase):
-    
+
     #  __init__ already tested
     #  __setitem__
     def test_setitem(self):

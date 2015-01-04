@@ -51,18 +51,21 @@ class mapCmd(dict):
 
         if ((isinstance(val, int) and self.int_is_index) or
                 (isinstance(val, str) and self.str_is_name)):
-            return (lambda row, index=self._convert_key(val): row[index])
-
+            return self._index_entry(val)
         elif isinstance(val, (tuple, list)):
-            func, indexes = val
-            if not callable(func):
-                raise TypeError("{} is not callable.".format(func))
-            indexes = rmap(self._convert_key, indexes)
-            return (lambda row: func(*rmap((lambda i: row[i]), indexes)))
-
+            return self._func_entry(*val)
         else:
             return (lambda *args, **kwargs: val)
-
+        
+    def _index_entry(self, val):
+         return (lambda row, index=self._convert_key(val): row[index])
+    
+    def _func_entry(self, func, indexes):
+        if not callable(func):
+            raise TypeError("{} is not callable.".format(func))
+        indexes = rmap(self._convert_key, indexes)
+        return (lambda row: func(*rmap((lambda i: row[i]), indexes)))
+    
     def _convert_key(self, key):
         if isinstance(key, str):
             return name_to_index(key)
