@@ -7,15 +7,9 @@ class TestFloatingFuncs(unittest.TestCase):
 
     def test_rmap(self):
         self.assertEqual(mapCmd.rmap(lambda x: x, []), [])
-<<<<<<< Updated upstream:tests/test_mapCmd.py
         result = mapCmd.rmap((lambda x: 1 + x),  [1, (2, 3), [4, (5, 6)]])
         self.assertEqual(result, [2, [3, 4], [5, [6, 7]]])
     
-=======
-        x = mapCmd.rmap((lambda x: 1 + x), [1, (2, 3), [4, (5, 6)]])
-        self.assertEqual(x, [2, [3, 4], [5, [6, 7]]])
-
->>>>>>> Stashed changes:test_mapCmd.py
     def test_name_to_index(self):
         self.assertEqual(mapCmd.name_to_index('A'), 0)
         self.assertEqual(mapCmd.name_to_index('AA'), 26)
@@ -39,14 +33,8 @@ class TestMapCmdKey(unittest.TestCase):
     # name -> index
     def test_name_key_replace(self):
         cmd = mapCmd.mapCmd({'A': 0, 1: 'B'}, str_is_name=True)
-<<<<<<< Updated upstream:tests/test_mapCmd.py
         self.assertEqual([0, 1], list(cmd))
-        
-=======
-        self.assertEqual(cmd[0](['a', 'b']), 'a')
-        self.assertEqual(cmd[1](['a', 'b']), 'b')
 
->>>>>>> Stashed changes:test_mapCmd.py
     # there is no name offset
     # name -> index
     def test_name_key_offset(self):
